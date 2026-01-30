@@ -134,13 +134,16 @@
             }
             
             .shift-morning, .shift-evening, .shift-full, .shift-rest {
-                padding: 6px 8px;
+                padding: 10px 14px;
                 font-size: 14px;
-                border-radius: 8px;
+                border-radius: 12px;
                 display: block;
                 width: 100%;
                 text-align: center;
                 white-space: nowrap;
+                font-weight: 600;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+                border-width: 1px;
             }
             
             .stats {
@@ -198,9 +201,12 @@
             }
             
             .shift-morning, .shift-evening, .shift-full, .shift-rest {
-                padding: 4px 6px;
+                padding: 6px 8px;
                 font-size: 12px;
-                border-radius: 6px;
+                border-radius: 8px;
+                font-weight: 600;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+                border-width: 1px;
             }
             
             .stat-item {
@@ -441,63 +447,75 @@
         }
         
         .shift-morning {
-            background-color: #e3f2fd;
-            color: #1565c0;
-            padding: 8px 12px;
-            border-radius: 12px;
-            font-weight: 500;
-            box-shadow: 0 1px 3px rgba(21, 101, 192, 0.1);
+            background-color: #2196F3;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 16px;
+            font-weight: 600;
+            box-shadow: 0 3px 8px rgba(33, 150, 243, 0.3);
             transition: all 0.3s ease;
+            border: 2px solid #1976D2;
+            font-size: 16px;
         }
         
         .shift-morning:hover {
-            background-color: #bbdefb;
-            box-shadow: 0 2px 5px rgba(21, 101, 192, 0.2);
+            background-color: #1976D2;
+            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.5);
+            transform: translateY(-2px);
         }
         
         .shift-evening {
-            background-color: #fff3e0;
-            color: #ef6c00;
-            padding: 8px 12px;
-            border-radius: 12px;
-            font-weight: 500;
-            box-shadow: 0 1px 3px rgba(239, 108, 0, 0.1);
+            background-color: #FF9800;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 16px;
+            font-weight: 600;
+            box-shadow: 0 3px 8px rgba(255, 152, 0, 0.3);
             transition: all 0.3s ease;
+            border: 2px solid #F57C00;
+            font-size: 16px;
         }
         
         .shift-evening:hover {
-            background-color: #ffe0b2;
-            box-shadow: 0 2px 5px rgba(239, 108, 0, 0.2);
+            background-color: #F57C00;
+            box-shadow: 0 5px 15px rgba(255, 152, 0, 0.5);
+            transform: translateY(-2px);
         }
         
         .shift-full {
-            background-color: #ffebee;
-            color: #c62828;
-            padding: 8px 12px;
-            border-radius: 12px;
-            font-weight: 500;
-            box-shadow: 0 1px 3px rgba(198, 40, 40, 0.1);
+            background-color: #F44336;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 16px;
+            font-weight: 600;
+            box-shadow: 0 3px 8px rgba(244, 67, 54, 0.3);
             transition: all 0.3s ease;
+            border: 2px solid #D32F2F;
+            font-size: 16px;
         }
         
         .shift-full:hover {
-            background-color: #ffcdd2;
-            box-shadow: 0 2px 5px rgba(198, 40, 40, 0.2);
+            background-color: #D32F2F;
+            box-shadow: 0 5px 15px rgba(244, 67, 54, 0.5);
+            transform: translateY(-2px);
         }
         
         .shift-rest {
-            background-color: #e8f5e9;
-            color: #2e7d32;
-            padding: 8px 12px;
-            border-radius: 12px;
-            font-weight: 500;
-            box-shadow: 0 1px 3px rgba(46, 125, 50, 0.1);
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 16px;
+            font-weight: 600;
+            box-shadow: 0 3px 8px rgba(76, 175, 80, 0.3);
             transition: all 0.3s ease;
+            border: 2px solid #388E3C;
+            font-size: 16px;
         }
         
         .shift-rest:hover {
-            background-color: #c8e6c9;
-            box-shadow: 0 2px 5px rgba(46, 125, 50, 0.2);
+            background-color: #388E3C;
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.5);
+            transform: translateY(-2px);
         }
         
         .stats {
