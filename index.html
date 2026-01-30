@@ -577,7 +577,8 @@
         <div class="section">
                 <h2>排班结果</h2>
                 <div style="margin-bottom: 15px;">
-                    <button onclick="saveTableAsImage()" style="background-color: #2196F3; margin-right: 10px;">保存排班表</button>
+                    <button onclick="saveWeekSchedule()" style="background-color: #2196F3; margin-right: 10px;">保存排班表</button>
+                    <button onclick="viewWeekSchedule()" style="background-color: #FF9800; margin-right: 10px;">查看本周排班</button>
                     <button onclick="generateSchedule()">重新生成</button>
                 </div>
                 <div class="schedule-container">
@@ -594,9 +595,6 @@
                 
                 <div class="stats" id="statsContainer">
                 </div>
-                
-
-
             </div>
     </div>
     
@@ -877,13 +875,75 @@
                             }
                         } else if (!hasMorning) {
                             // 只有晚班，需要分配早班
-                            shift = 'morning';
+                            // 优先分配给早班最少的员工
+                            let minMorningCount = Infinity;
+                            let minMorningIndex = -1;
+                            workingEmployees.forEach(idx => {
+                                if (shifts[idx] === '') {
+                                    if (morningCount[idx] < minMorningCount) {
+                                        minMorningCount = morningCount[idx];
+                                        minMorningIndex = idx;
+                                    }
+                                }
+                            });
+                            shift = minMorningIndex === empIndex ? 'morning' : '';
+                            // 如果不是早班最少的员工，暂时不分配
+                            if (shift !== 'morning' && shifts[empIndex] === '') {
+                                // 暂时跳过，让其他员工先分配
+                                return;
+                            }
                         } else if (!hasEvening) {
                             // 只有早班，需要分配晚班
-                            shift = 'evening';
+                            // 优先分配给晚班最少的员工
+                            let minEveningCount = Infinity;
+                            let minEveningIndex = -1;
+                            workingEmployees.forEach(idx => {
+                                if (shifts[idx] === '') {
+                                    if (eveningCount[idx] < minEveningCount) {
+                                        minEveningCount = eveningCount[idx];
+                                        minEveningIndex = idx;
+                                    }
+                                }
+                            });
+                            shift = minEveningIndex === empIndex ? 'evening' : '';
+                            // 如果不是晚班最少的员工，暂时不分配
+                            if (shift !== 'evening' && shifts[empIndex] === '') {
+                                // 暂时跳过，让其他员工先分配
+                                return;
+                            }
                         } else {
                             // 早班和晚班都已有员工，根据历史班次数量分配
-                            shift = morningCount[empIndex] <= eveningCount[empIndex] ? 'morning' : 'evening';
+                            // 优先考虑班次最不平衡的员工
+                            let maxDiff = -1;
+                            let targetIndex = -1;
+                            let shouldAssignMorning = false;
+                            
+                            workingEmployees.forEach(idx => {
+                                if (shifts[idx] === '') {
+                                    const diff = Math.abs(morningCount[idx] - eveningCount[idx]);
+                                    if (diff > maxDiff) {
+                                        maxDiff = diff;
+                                        targetIndex = idx;
+                                        shouldAssignMorning = morningCount[idx] < eveningCount[idx];
+                                    } else if (diff === maxDiff) {
+                                        // 差异相同，选择总班次少的
+                                        const total1 = morningCount[idx] + eveningCount[idx];
+                                        const total2 = morningCount[targetIndex] + eveningCount[targetIndex];
+                                        if (total1 < total2) {
+                                            targetIndex = idx;
+                                            shouldAssignMorning = morningCount[idx] < eveningCount[idx];
+                                        }
+                                    }
+                                }
+                            });
+                            
+                            // 为最需要平衡的员工分配班次
+                            if (targetIndex === empIndex) {
+                                shift = shouldAssignMorning ? 'morning' : 'evening';
+                            } else {
+                                // 对于其他员工，继续根据历史数量分配
+                                shift = morningCount[empIndex] <= eveningCount[empIndex] ? 'morning' : 'evening';
+                            }
                         }
                         
                         // 优先延续前一天的有效班次（支持连续排班）
@@ -899,7 +959,14 @@
                             }
                             // 如果不会连续3天相同班次，延续前一天的班次
                             if (!isConsecutive) {
-                                shift = previousShift[empIndex];
+                                // 但要确保不会破坏整体平衡
+                                const morningDiff = Math.abs((morningCount[empIndex] + (previousShift[empIndex] === 'morning' ? 1 : 0)) - eveningCount[empIndex]);
+                                const eveningDiff = Math.abs(morningCount[empIndex] - (eveningCount[empIndex] + (previousShift[empIndex] === 'evening' ? 1 : 0)));
+                                
+                                // 如果延续前一天的班次不会导致差异超过1，则延续
+                                if (Math.min(morningDiff, eveningDiff) <= 1) {
+                                    shift = previousShift[empIndex];
+                                }
                             }
                         }
                         
@@ -931,6 +998,18 @@
                         shifts[empIndex] = shift;
                     });
                     
+                    // 确保所有工作员工都有分配班次
+                    workingEmployees.forEach(empIndex => {
+                        if (shifts[empIndex] === '') {
+                            // 没有分配到班次的员工，根据历史数量分配
+                            if (morningCount[empIndex] <= eveningCount[empIndex]) {
+                                shifts[empIndex] = 'morning';
+                            } else {
+                                shifts[empIndex] = 'evening';
+                            }
+                        }
+                    });
+                    
                     // 检查是否会导致连续3天相同班次
                     shifts.forEach((shift, empIndex) => {
                         if (shift !== 'rest' && day >= 2) {
@@ -947,6 +1026,36 @@
                                     shifts[empIndex] = 'morning';
                                 } else if (shift === 'morning' || shift === 'evening') {
                                     shifts[empIndex] = 'full';
+                                }
+                            }
+                        }
+                    });
+                    
+                    // 最终平衡调整：确保每个员工的早班和晚班数量差异不超过1
+                    workingEmployees.forEach(empIndex => {
+                        if (shifts[empIndex] === 'morning' || shifts[empIndex] === 'evening') {
+                            const expectedShift = morningCount[empIndex] <= eveningCount[empIndex] ? 'morning' : 'evening';
+                            const currentShift = shifts[empIndex];
+                            
+                            // 如果当前班次与预期班次不同，且不会导致连续3天相同班次，则调整
+                            if (expectedShift !== currentShift) {
+                                let canChange = true;
+                                
+                                // 检查是否会导致连续3天相同班次
+                                if (day >= 2) {
+                                    const day2Shift = schedule[day-2].employees[empIndex].shift;
+                                    const day1Shift = previousShift[empIndex];
+                                    if (day2Shift === expectedShift && day1Shift === expectedShift) {
+                                        canChange = false;
+                                    }
+                                }
+                                
+                                if (canChange) {
+                                    // 检查调整后是否会超过班次限制
+                                    if ((expectedShift === 'morning' && morningCount[empIndex] < 4) || 
+                                        (expectedShift === 'evening' && eveningCount[empIndex] < 4)) {
+                                        shifts[empIndex] = expectedShift;
+                                    }
                                 }
                             }
                         }
@@ -1028,7 +1137,11 @@
         } else {
             console.error("❌ 存在员工在某些天没有排班的情况！");
         }
-        
+
+        // 保存当前排班数据到全局变量
+        currentSchedule = schedule;
+        currentEmployees = employees;
+
         displaySchedule(schedule, employees);
         }
         
@@ -1227,143 +1340,55 @@
             });
         }
         
-        // 动态加载html2canvas库
-        function loadHtml2Canvas() {
-            return new Promise((resolve) => {
-                if (window.html2canvas) {
-                    resolve();
-                    return;
-                }
-                
-                const script = document.createElement('script');
-                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-                script.onload = resolve;
-                document.body.appendChild(script);
-            });
+        // 全局变量，用于存储当前排班数据
+        let currentSchedule = [];
+        let currentEmployees = [];
+        
+        // 保存排班数据到本地存储
+        function saveWeekSchedule() {
+            if (currentSchedule.length === 0 || currentEmployees.length === 0) {
+                alert('没有可保存的排班数据，请先生成排班表。');
+                return;
+            }
+            
+            // 创建要保存的数据对象
+            const scheduleData = {
+                id: Date.now(), // 使用时间戳作为唯一ID
+                date: new Date().toISOString(),
+                employees: currentEmployees.map(emp => ({
+                    id: emp.id,
+                    name: emp.name,
+                    shifts: emp.shifts
+                })),
+                schedule: currentSchedule
+            };
+            
+            // 保存到本地存储（只保存最新的排班数据）
+            localStorage.setItem('currentWeekSchedule', JSON.stringify(scheduleData));
+            
+            alert('排班数据保存成功！');
         }
         
-        async function saveTableAsImage() {
-            // 加载html2canvas库
-            await loadHtml2Canvas();
+        // 查看本周排班
+        function viewWeekSchedule() {
+            // 从本地存储获取保存的本周排班数据
+            const savedSchedule = JSON.parse(localStorage.getItem('currentWeekSchedule') || 'null');
             
-            const table = document.getElementById('scheduleTable');
-            const container = table.parentNode;
-            
-            // 保存原始样式
-            const originalContainerStyle = container.style.cssText;
-            const originalTableStyle = table.style.cssText;
-            
-            try {
-                // 移除所有可能影响截图的样式
-                container.style.overflow = 'visible';
-                container.style.height = 'auto';
-                container.style.width = 'auto';
-                container.style.maxWidth = 'none';
-                container.style.position = 'static';
-                container.style.margin = '0';
-                container.style.padding = '0';
-                
-                table.style.transform = 'none';
-                table.style.position = 'static';
-                table.style.overflow = 'visible';
-                table.style.width = 'auto';
-                table.style.whiteSpace = 'nowrap';
-                table.style.borderCollapse = 'collapse';
-                
-                // 确保所有单元格内容完整显示
-                const cells = table.querySelectorAll('th, td');
-                cells.forEach(cell => {
-                    cell.style.whiteSpace = 'nowrap';
-                    cell.style.overflow = 'visible';
-                    cell.style.textOverflow = 'clip';
-                    cell.style.border = '1px solid #e0e0e0';
-                });
-                
-                // 强制浏览器重新计算尺寸
-                document.body.offsetHeight;
-                
-                // 等待更长时间确保DOM渲染完成
-                await new Promise(resolve => setTimeout(resolve, 800));
-                
-                // 使用getBoundingClientRect获取更准确的表格尺寸
-                const rect = table.getBoundingClientRect();
-                const tableWidth = Math.ceil(rect.width);
-                const tableHeight = Math.ceil(rect.height);
-                
-                // 手动计算更准确的尺寸，确保所有内容都被包含
-                const allCells = table.querySelectorAll('th, td');
-                let calculatedWidth = 0;
-                let calculatedHeight = 0;
-                
-                // 计算第一行所有单元格的宽度总和
-                const firstRowCells = table.querySelector('tr').querySelectorAll('th, td');
-                firstRowCells.forEach(cell => {
-                    calculatedWidth += cell.getBoundingClientRect().width;
-                });
-                
-                // 计算所有行的高度总和
-                const rows = table.querySelectorAll('tr');
-                rows.forEach(row => {
-                    calculatedHeight += row.getBoundingClientRect().height;
-                });
-                
-                // 取最大值确保所有内容都被包含
-                const finalWidth = Math.max(tableWidth, calculatedWidth);
-                const finalHeight = Math.max(tableHeight, calculatedHeight);
-                
-                // 设置容器尺寸以容纳完整表格
-                container.style.width = finalWidth + 'px';
-                container.style.height = finalHeight + 'px';
-                
-                // 再次强制重排和等待
-                document.body.offsetHeight;
-                await new Promise(resolve => setTimeout(resolve, 200));
-                
-                // 使用html2canvas捕获整个表格容器，增加更多配置选项
-                const canvas = await html2canvas(container, {
-                    backgroundColor: '#ffffff',
-                    scale: 2,
-                    logging: false,
-                    useCORS: true,
-                    allowTaint: false,
-                    scrollX: 0,
-                    scrollY: 0,
-                    x: 0,
-                    y: 0,
-                    width: finalWidth,
-                    height: finalHeight,
-                    windowWidth: finalWidth,
-                    windowHeight: finalHeight,
-                    onclone: (clonedDoc) => {
-                        // 确保克隆的文档中表格样式正确
-                        const clonedTable = clonedDoc.getElementById('scheduleTable');
-                        const clonedContainer = clonedTable.parentNode;
-                        clonedContainer.style.width = finalWidth + 'px';
-                        clonedContainer.style.height = finalHeight + 'px';
-                        clonedContainer.style.overflow = 'visible';
-                        clonedTable.style.transform = 'none';
-                        clonedTable.style.width = 'auto';
-                    }
-                });
-                
-                // 下载图片
-                canvas.toBlob(blob => {
-                    if (blob) {
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = `排班表_${new Date().toISOString().slice(0, 10)}.png`;
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                        URL.revokeObjectURL(url);
-                    }
-                });
-            } finally {
-                // 恢复原始样式
-                container.style.cssText = originalContainerStyle;
-                table.style.cssText = originalTableStyle;
+            if (!savedSchedule) {
+                alert('没有找到本周排班数据，请先保存排班表。');
+                return;
             }
+            
+            // 更新全局变量
+            currentSchedule = savedSchedule.schedule;
+            currentEmployees = savedSchedule.employees;
+            
+            // 显示排班表
+            displaySchedule(currentSchedule, currentEmployees);
+            
+            // 提示用户已加载本周排班
+            const saveDate = new Date(savedSchedule.date).toLocaleString('zh-CN');
+            alert(`已加载保存于 ${saveDate} 的本周排班表`);
         }
         
         // 页面加载时自动生成排班表
