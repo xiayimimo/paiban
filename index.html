@@ -1261,6 +1261,13 @@
             const table = document.getElementById('scheduleTable');
             const thead = table.querySelector('thead');
             const tbody = table.querySelector('tbody');
+            const container = table.parentElement;
+            
+            // 移除现有的"本周排班"标识
+            const existingBadge = container.querySelector('.week-schedule-badge');
+            if (existingBadge) {
+                existingBadge.remove();
+            }
             
             // 清空现有内容
             thead.innerHTML = '';
@@ -1404,9 +1411,18 @@
             // 显示排班表
             displaySchedule(currentSchedule, currentEmployees);
             
-            // 提示用户已加载本周排班
-            const saveDate = new Date(savedSchedule.date).toLocaleString('zh-CN');
-            alert(`已加载保存于 ${saveDate} 的本周排班表`);
+            // 添加"本周排班"标识
+            const table = document.getElementById('scheduleTable');
+            const container = table.parentElement;
+            const existingBadge = container.querySelector('.week-schedule-badge');
+            if (existingBadge) {
+                existingBadge.remove();
+            }
+            const badge = document.createElement('div');
+            badge.className = 'week-schedule-badge';
+            badge.style.cssText = `background-color: #FF9800; color: white; padding: 8px 16px; border-radius: 20px; font-weight: bold; text-align: center; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(255, 152, 0, 0.3);`;
+            badge.textContent = '本周排班';
+            container.insertBefore(badge, table);
         }
         
         // 页面加载时自动生成排班表
