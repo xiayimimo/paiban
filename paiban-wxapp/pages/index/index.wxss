@@ -1,0 +1,103 @@
+.table {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-top: 20rpx;
+  border-radius: 8rpx;
+  overflow: hidden;
+  box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.05);
+}
+
+.table-row {
+  display: flex;
+  width: 100%;
+}
+
+.table-row.header {
+  background-color: #f8f9fa;
+  font-weight: bold;
+}
+
+.table-cell {
+  flex: 1;
+  padding: 15rpx;
+  text-align: center;
+  border: 1rpx solid #e0e0e0;
+  border-right: none;
+  border-bottom: none;
+  min-height: 80rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.table-row .table-cell:first-child {
+  flex: 0 0 120rpx;
+  background-color: #f8f9fa;
+  font-weight: bold;
+}
+
+.table-row.header .table-cell:first-child {
+  border-top-left-radius: 8rpx;
+}
+
+.table-row.header .table-cell:last-child {
+  border-top-right-radius: 8rpx;
+}
+
+.table-row:last-child .table-cell:first-child {
+  border-bottom-left-radius: 8rpx;
+}
+
+.table-row:last-child .table-cell:last-child {
+  border-bottom-right-radius: 8rpx;
+}
+
+.table-cell:last-child {
+  border-right: 1rpx solid #e0e0e0;
+}
+
+.table-row:last-child .table-cell {
+  border-bottom: 1rpx solid #e0e0e0;
+}
+
+.employee-cell {
+  font-weight: bold;
+  background-color: #f8f9fa;
+}
+
+/* 适配不同屏幕尺寸 */
+@media screen and (max-width: 750rpx) {
+  .table-cell {
+    padding: 10rpx 5rpx;
+  }
+  
+  .table-row .table-cell:first-child {
+    flex: 0 0 100rpx;
+  }
+  
+  .diagonal-name, .diagonal-date {
+    font-size: 20rpx;
+  }
+}
+
+@media screen and (max-width: 480rpx) {
+  .table-cell {
+    padding: 8rpx 3rpx;
+    font-size: 24rpx;
+  }
+  
+  .table-row .table-cell:first-child {
+    flex: 0 0 80rpx;
+  }
+  
+  .diagonal-cell {
+    height: 60rpx;
+    width: 60rpx;
+  }
+  
+  .diagonal-name, .diagonal-date {
+    font-size: 18rpx;
+  }
+}

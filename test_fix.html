@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>排班修复测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .pass {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .fail {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>排班修复测试</h1>
+    <button onclick="runTests()">运行测试</button>
+    <div id="testResults"></div>
+    <div id="scheduleTableContainer"></div>
+
+    <script>
+        // 从index.html复制的核心函数
+        function assignRestDays(numEmployees) {
+            const restDays = [];
+            const days = [0, 1, 2, 3, 4, 5, 6];
+            
+            if (numEmployees <= 7) {
+                const availableDays = [...days];
+                for (let i = 0; i < numEmployees; i++) {
+                    const randomIndex = Math.floor(Math.random() * availableDays.length);
+                    restDays.push(availableDays[randomIndex]);
+                    availableDays.splice(randomIndex, 1);
+                }
+            } else {
+                const mustWork = new Array(7).fill(false);
+                const dayCounts = new Array(7).fill(0);
+                for (let i = 0; i < numEmployees; i++) {
+                    let randomDay;
+                    let attempts = 0;
+                    const maxAttempts = 10;
+                    do {
+                        randomDay = days[Math.floor(Math.random() * days.length)];
+                        attempts++;
+                        if (i < 7 && !mustWork[randomDay]) {
+                            restDays.push(randomDay);
+                            mustWork[randomDay] = true;
+                            dayCounts[randomDay]++;
+                            break;
+                        }
+                        let isConsecutive = false;
+                        if (i >= 2) {
+                            if (restDays[i-1] === randomDay - 1 && restDays[i-2] === randomDay - 2) isConsecutive = true;
+                            if (restDays[i-1] === randomDay + 1 && restDays[i-2] === randomDay + 2) isConsecutive = true;
+                        }
+                        if (!isConsecutive || attempts >= maxAttempts) {
+                            restDays.push(randomDay);
+                            dayCounts[randomDay]++;
+                            break;
+                        }
+                    } while (true);
+                }
+            }
+            
+            // 最终检查：确保每天至少有一名员工工作
+            const workingDays = new Array(7).fill(false);
+            for (let day = 0; day < 7; day++) {
+                let hasWorker = false;
+                for (let i = 0; i < numEmployees; i++) {
+                    if (restDays[i] !== day) {
+                        hasWorker = true;
+                        break;
+                    }
+                }
+                if (!hasWorker) {
+                    for (let i = 0; i < numEmployees; i++) {
+                        if (restDays[i] !== day) {
+                            let newRestDay;
+                            do {
+                                newRestDay = days[Math.floor(Math.random() * days.length)];
+                            } while (newRestDay === day);
+                            restDays[i] = newRestDay;
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            return restDays;
+        }
+
+        function generateSchedule(employees) {
+            const daysOfWeek = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+            const schedule = [];
+            const restDays = assignRestDays(employees.length);
+            const morningCount = new Array(employees.length).fill(0);
+            const eveningCount = new Array(employees.length).fill(0);
+            const previousShift = new Array(employees.length).fill('');
+            
+            for (let day = 0; day < 7; day++) {
+                const daySchedule = {
+                    dayOfWeek: daysOfWeek[day],
+                    employees: []
+                };
+                
+                const shifts = [];
+                const workingEmployees = [];
+                
+                // 收集今天不休息的员工
+                employees.forEach((employee, empIndex) => {
+                    if (restDays[empIndex] === day) {
+                        shifts.push('rest');
+                    } else {
+                        workingEmployees.push(empIndex);
+                        shifts.push('');
+                    }
+                });
+                
+                // 为所有员工分配班次
+                workingEmployees.forEach(empIndex => {
+                    if (workingEmployees.length === 1) {
+                        shifts[empIndex] = 'full';
+                        return;
+                    }
+                    
+                    let shift = '';
+                    const hasMorning = shifts.some(s => s === 'morning');
+                    const hasEvening = shifts.some(s => s === 'evening');
+                    
+                    // 修复后的逻辑：找出早班最少的员工分配早班
+                    if (!hasMorning && !hasEvening) {
+                        let minMorningCount = Infinity;
+                        let minMorningIndex = -1;
+                        workingEmployees.forEach(idx => {
+                            if (morningCount[idx] < minMorningCount) {
+                                minMorningCount = morningCount[idx];
+                                minMorningIndex = idx;
+                            }
+                        });
+                        
+                        if (minMorningIndex === empIndex) {
+                            shift = 'morning';
+                        } else {
+                            // 找出晚班最少的员工分配晚班
+                            let minEveningCount = Infinity;
+                            let minEveningIndex = -1;
+                            workingEmployees.forEach(idx => {
+                                if (eveningCount[idx] < minEveningCount) {
+                                    minEveningCount = eveningCount[idx];
+                                    minEveningIndex = idx;
+                                }
+                            });
+                            
+                            if (minEveningIndex === empIndex) {
+                                shift = 'evening';
+                            } else {
+                                // 如果当前员工既不是早班最少也不是晚班最少，随机分配
+                                shift = Math.random() > 0.5 ? 'morning' : 'evening';
+                            }
+                        }
+                    } else if (!hasMorning) {
+                        shift = 'morning';
+                    } else if (!hasEvening) {
+                        shift = 'evening';
+                    }
+                    
+                    // 如果还没有分配班次
+                    if (shift === '') {
+                        if (day > 0 && previousShift[empIndex] !== 'rest' && previousShift[empIndex] !== '') {
+                            shift = previousShift[empIndex];
+                        } else if (morningCount[empIndex] <= eveningCount[empIndex] + 1) {
+                            shift = 'morning';
+                        } else {
+                            shift = 'evening';
+                        }
+                    }
+                    
+                    // 限制每个员工的早班和晚班数量不超过4天
+                    if (shift === 'morning' && morningCount[empIndex] >= 4) {
+                        shift = 'evening';
+                    } else if (shift === 'evening' && eveningCount[empIndex] >= 4) {
+                        shift = 'morning';
+                    }
+                    
+                    // 如果早班和晚班都已经满了，分配全班
+                    if ((shift === 'morning' && morningCount[empIndex] >= 4) || 
+                        (shift === 'evening' && eveningCount[empIndex] >= 4)) {
+                        shift = 'full';
+                    }
+                    
+                    // 确保最终分配了有效的班次
+                    if (shift === '') {
+                        shift = Math.random() > 0.5 ? 'morning' : 'evening';
+                    }
+                    
+                    shifts[empIndex] = shift;
+                });
+                
+                // 检查是否会导致连续3天相同班次
+                shifts.forEach((shift, empIndex) => {
+                    if (shift !== 'rest' && day >= 2) {
+                        const day2Shift = schedule[day-2].employees[empIndex].shift;
+                        const day1Shift = previousShift[empIndex];
+                        
+                        if (day1Shift === shift && day2Shift === shift) {
+                            if (shift === 'morning' && eveningCount[empIndex] < 4) {
+                                shifts[empIndex] = 'evening';
+                            } else if (shift === 'evening' && morningCount[empIndex] < 4) {
+                                shifts[empIndex] = 'morning';
+                            } else if (shift === 'morning' || shift === 'evening') {
+                                shifts[empIndex] = 'full';
+                            }
+                        }
+                    }
+                });
+                
+                // 更新班次计数器、员工统计和前一天班次记录
+                shifts.forEach((shift, empIndex) => {
+                    // 修复后的逻辑：确保所有员工都有有效的班次
+                    if (shift === '') {
+                        if (restDays[empIndex] === day) {
+                            shifts[empIndex] = 'rest';
+                            employees[empIndex].shifts.rest++;
+                        } else {
+                            if (morningCount[empIndex] <= eveningCount[empIndex]) {
+                                shifts[empIndex] = 'morning';
+                                morningCount[empIndex]++;
+                            } else {
+                                shifts[empIndex] = 'evening';
+                                eveningCount[empIndex]++;
+                            }
+                            employees[empIndex].shifts[shifts[empIndex]]++;
+                        }
+                    } else {
+                        if (shift === 'morning') morningCount[empIndex]++;
+                        if (shift === 'evening') eveningCount[empIndex]++;
+                        
+                        employees[empIndex].shifts[shift]++;
+                    }
+                    
+                    daySchedule.employees.push({ name: employees[empIndex].name, shift: shifts[empIndex] });
+                    previousShift[empIndex] = shifts[empIndex];
+                });
+                
+                schedule.push(daySchedule);
+            }
+            
+            return schedule;
+        }
+
+        function runTests() {
+            const testResults = document.getElementById('testResults');
+            testResults.innerHTML = '';
+            
+            // 测试用例：4名员工
+            const employees = [
+                { id: 1, name: '张三', shifts: { morning: 0, evening: 0, full: 0, rest: 0 } },
+                { id: 2, name: '李四', shifts: { morning: 0, evening: 0, full: 0, rest: 0 } },
+                { id: 3, name: '王五', shifts: { morning: 0, evening: 0, full: 0, rest: 0 } },
+                { id: 4, name: '赵六', shifts: { morning: 0, evening: 0, full: 0, rest: 0 } }
+            ];
+            
+            let allTestsPassed = true;
+            
+            // 运行10次测试，确保没有员工在任何一天没有排班
+            for (let test = 1; test <= 10; test++) {
+                // 重置员工统计
+                employees.forEach(emp => {
+                    emp.shifts = { morning: 0, evening: 0, full: 0, rest: 0 };
+                });
+                
+                const schedule = generateSchedule(employees);
+                let testPassed = true;
+                
+                // 检查是否有员工在某一天没有排班
+                schedule.forEach((daySchedule, day) => {
+                    daySchedule.employees.forEach((empSchedule, empIndex) => {
+                        if (!empSchedule.shift) {
+                            console.log(`测试${test}失败：${empSchedule.name}在${daySchedule.dayOfWeek}没有排班！`);
+                            testPassed = false;
+                            allTestsPassed = false;
+                        }
+                    });
+                });
+                
+                const resultDiv = document.createElement('div');
+                resultDiv.className = `test-result ${testPassed ? 'pass' : 'fail'}`;
+                resultDiv.textContent = `测试${test}：${testPassed ? '通过' : '失败'}`;
+                testResults.appendChild(resultDiv);
+            }
+            
+            // 显示最后一次测试的排班表
+            const finalSchedule = generateSchedule(employees);
+            displaySchedule(finalSchedule, employees);
+        }
+
+        function displaySchedule(schedule, employees) {
+            const container = document.getElementById('scheduleTableContainer');
+            
+            let html = '<h2>最后一次测试的排班表：</h2>';
+            html += '<table>';
+            
+            // 表头
+            html += '<thead><tr>';
+            html += '<th>员工</th>';
+            schedule.forEach(day => {
+                html += `<th>${day.dayOfWeek}</th>`;
+            });
+            html += '</tr></thead>';
+            
+            // 员工行
+            html += '<tbody>';
+            employees.forEach((emp, empIndex) => {
+                html += `<tr><td>${emp.name}</td>`;
+                schedule.forEach(day => {
+                    const shift = day.employees[empIndex].shift;
+                    html += `<td>${shift}</td>`;
+                });
+                html += '</tr>';
+            });
+            html += '</tbody>';
+            
+            html += '</table>';
+            container.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

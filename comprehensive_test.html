@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>排班算法全面测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .test-result {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 4px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        .shift-morning { background-color: #e3f2fd; color: #1565c0; }
+        .shift-evening { background-color: #fff3e0; color: #ef6c00; }
+        .shift-full { background-color: #ffebee; color: #c62828; }
+        .shift-rest { background-color: #e8f5e9; color: #2e7d32; }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .summary {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>排班算法全面测试</h1>
+        <button onclick="runTests()">开始测试</button>
+        <div id="testResults"></div>
+        <div class="summary">
+            <h2>测试总结</h2>
+            <div id="summary"></div>
+        </div>
+    </div>
+
+    <script>
+        // 排班算法核心函数
+        function generateSchedule(employees) {
+            const daysOfWeek = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+            const schedule = [];
+            
+            // 初始化
+            const restDays = assignRestDays(employees.length);
+            const morningCount = new Array(employees.length).fill(0);
+            const eveningCount = new Array(employees.length).fill(0);
+            const previousShift = new Array(employees.length).fill('');
+            
+            for (let day = 0; day < 7; day++) {
+                const daySchedule = {
+                    dayOfWeek: daysOfWeek[day],
+                    employees: []
+                };
+                
+                if (employees.length === 2) {
+                    // 2个员工的特殊处理
+                    if (restDays[0] === day) {
+                        daySchedule.employees.push({ name: employees[0].name, shift: 'rest' });
+                        daySchedule.employees.push({ name: employees[1].name, shift: 'full' });
+                    } else if (restDays[1] === day) {
+                        daySchedule.employees.push({ name: employees[0].name, shift: 'full' });
+                        daySchedule.employees.push({ name: employees[1].name, shift: 'rest' });
+                    } else {
+                        let emp0Shift = day > 0 && previousShift[0] !== 'rest' ? previousShift[0] : 'morning';
+                        let emp1Shift = day > 0 && previousShift[1] !== 'rest' ? previousShift[1] : 'evening';
+                        
+                        if (emp0Shift === emp1Shift) {
+                            emp1Shift = emp1Shift === 'morning' ? 'evening' : 'morning';
+                        }
+                        
+                        // 检查连续3天相同班次
+                        if (day >= 2) {
+                            if (previousShift[0] === emp0Shift && schedule[day-2].employees[0].shift === emp0Shift) {
+                                emp0Shift = emp0Shift === 'morning' ? 'evening' : 'morning';
+                                emp1Shift = emp1Shift === 'morning' ? 'evening' : 'morning';
+                            } else if (previousShift[1] === emp1Shift && schedule[day-2].employees[1].shift === emp1Shift) {
+                                emp1Shift = emp1Shift === 'morning' ? 'evening' : 'morning';
+                                emp0Shift = emp0Shift === 'morning' ? 'evening' : 'morning';
+                            }
+                        }
+                        
+                        daySchedule.employees.push({ name: employees[0].name, shift: emp0Shift });
+                        daySchedule.employees.push({ name: employees[1].name, shift: emp1Shift });
+                    }
+                } else {
+                    // 多个员工情况
+                    const shifts = [];
+                    const workingEmployees = [];
+                    
+                    employees.forEach((employee, empIndex) => {
+                        if (restDays[empIndex] === day) {
+                            shifts.push('rest');
+                        } else {
+                            workingEmployees.push(empIndex);
+                            shifts.push('');
+                        }
+                    });
+                    
+                    // 为所有员工分配班次（确保每个人都有排班）
+                    workingEmployees.forEach(empIndex => {
+                        if (workingEmployees.length === 1) {
+                            shifts[empIndex] = 'full';
+                            return;
+                        }
+                        
+                        let shift = '';
+                        const hasMorning = shifts.some(s => s === 'morning');
+                        const hasEvening = shifts.some(s => s === 'evening');
+                        
+                        if (!hasMorning && !hasEvening) {
+                            let minMorningCount = Infinity;
+                            let minMorningIndex = -1;
+                            workingEmployees.forEach(idx => {
+                                if (morningCount[idx] < minMorningCount) {
+                                    minMorningCount = morningCount[idx];
+                                    minMorningIndex = idx;
+                                }
+                            });
+                            
+                            if (minMorningIndex === empIndex) {
+                                shift = 'morning';
+                            } else {
+                                let minEveningCount = Infinity;
+                                let minEveningIndex = -1;
+                                workingEmployees.forEach(idx => {
+                                    if (eveningCount[idx] < minEveningCount) {
+                                        minEveningCount = eveningCount[idx];
+                                        minEveningIndex = idx;
+                                    }
+                                });
+                                
+                                if (minEveningIndex === empIndex) {
+                                    shift = 'evening';
+                                } else {
+                                    shift = morningCount[empIndex] <= eveningCount[empIndex] ? 'morning' : 'evening';
+                                }
+                            }
+                        } else if (!hasMorning) {
+                            shift = 'morning';
+                        } else if (!hasEvening) {
+                            shift = 'evening';
+                        } else {
+                            shift = morningCount[empIndex] <= eveningCount[empIndex] ? 'morning' : 'evening';
+                        }
+                        
+                        // 优先延续前一天的有效班次（支持连续排班）
+                        if (day > 0 && previousShift[empIndex] !== 'rest' && previousShift[empIndex] !== '') {
+                            let isConsecutive = false;
+                            if (day >= 2) {
+                                const day2Shift = schedule[day-2].employees[empIndex].shift;
+                                const day1Shift = previousShift[empIndex];
+                                if (day2Shift === day1Shift && day1Shift === shift) {
+                                    isConsecutive = true;
+                                }
+                            }
+                            if (!isConsecutive) {
+                                shift = previousShift[empIndex];
+                            }
+                        }
+                        
+                        // 限制每个员工的早班和晚班数量不超过4天
+                        if (shift === 'morning' && morningCount[empIndex] >= 4) {
+                            shift = 'evening';
+                        } else if (shift === 'evening' && eveningCount[empIndex] >= 4) {
+                            shift = 'morning';
+                        }
+                        
+                        // 如果早班和晚班都已经满了，分配全班
+                        if ((shift === 'morning' && morningCount[empIndex] >= 4) || 
+                            (shift === 'evening' && eveningCount[empIndex] >= 4)) {
+                            shift = 'full';
+                        }
+                        
+                        // 最终确保分配了有效的班次
+                        if (shift === '') {
+                            shift = morningCount[empIndex] <= eveningCount[empIndex] ? 'morning' : 'evening';
+                        }
+                        
+                        shifts[empIndex] = shift;
+                    });
+                    
+                    // 检查是否会导致连续3天相同班次
+                    shifts.forEach((shift, empIndex) => {
+                        if (shift !== 'rest' && day >= 2) {
+                            const day2Shift = schedule[day-2].employees[empIndex].shift;
+                            const day1Shift = previousShift[empIndex];
+                            
+                            if (day1Shift === shift && day2Shift === shift) {
+                                if (shift === 'morning' && eveningCount[empIndex] < 4) {
+                                    shifts[empIndex] = 'evening';
+                                } else if (shift === 'evening' && morningCount[empIndex] < 4) {
+                                    shifts[empIndex] = 'morning';
+                                } else if (shift === 'morning' || shift === 'evening') {
+                                    shifts[empIndex] = 'full';
+                                }
+                            }
+                        }
+                    });
+                    
+                    // 更新班次计数器和员工统计
+                    shifts.forEach((shift, empIndex) => {
+                        if (shift === '') {
+                            if (restDays[empIndex] === day) {
+                                shifts[empIndex] = 'rest';
+                            } else {
+                                shifts[empIndex] = morningCount[empIndex] <= eveningCount[empIndex] ? 'morning' : 'evening';
+                                if (shifts[empIndex] === 'morning') morningCount[empIndex]++;
+                                if (shifts[empIndex] === 'evening') eveningCount[empIndex]++;
+                            }
+                        } else {
+                            if (shift === 'morning') morningCount[empIndex]++;
+                            if (shift === 'evening') eveningCount[empIndex]++;
+                        }
+                        
+                        daySchedule.employees.push({ name: employees[empIndex].name, shift: shifts[empIndex] });
+                        previousShift[empIndex] = shifts[empIndex];
+                    });
+                }
+                
+                schedule.push(daySchedule);
+            }
+            
+            return schedule;
+        }
+        
+        function assignRestDays(numEmployees) {
+            const restDays = [];
+            const days = [0, 1, 2, 3, 4, 5, 6];
+            
+            if (numEmployees <= 7) {
+                const availableDays = [...days];
+                for (let i = 0; i < numEmployees; i++) {
+                    const randomIndex = Math.floor(Math.random() * availableDays.length);
+                    restDays.push(availableDays[randomIndex]);
+                    availableDays.splice(randomIndex, 1);
+                }
+            } else {
+                const mustWork = new Array(7).fill(false);
+                const dayCounts = new Array(7).fill(0);
+                
+                for (let i = 0; i < numEmployees; i++) {
+                    let randomDay;
+                    let attempts = 0;
+                    const maxAttempts = 10;
+                    
+                    do {
+                        randomDay = days[Math.floor(Math.random() * days.length)];
+                        attempts++;
+                        
+                        if (i < 7 && !mustWork[randomDay]) {
+                            restDays.push(randomDay);
+                            mustWork[randomDay] = true;
+                            dayCounts[randomDay]++;
+                            break;
+                        }
+                        
+                        let isConsecutive = false;
+                        if (i >= 2) {
+                            if (restDays[i-1] === randomDay - 1 && restDays[i-2] === randomDay - 2) {
+                                isConsecutive = true;
+                            }
+                            if (restDays[i-1] === randomDay + 1 && restDays[i-2] === randomDay + 2) {
+                                isConsecutive = true;
+                            }
+                        }
+                        
+                        if (!isConsecutive || attempts >= maxAttempts) {
+                            restDays.push(randomDay);
+                            dayCounts[randomDay]++;
+                            break;
+                        }
+                    } while (true);
+                }
+            }
+            
+            // 最终检查：确保每天至少有一名员工工作
+            for (let day = 0; day < 7; day++) {
+                let hasWorker = false;
+                for (let i = 0; i < numEmployees; i++) {
+                    if (restDays[i] !== day) {
+                        hasWorker = true;
+                        break;
+                    }
+                }
+                if (!hasWorker) {
+                    for (let i = 0; i < numEmployees; i++) {
+                        if (restDays[i] !== day) {
+                            let newRestDay;
+                            do {
+                                newRestDay = days[Math.floor(Math.random() * days.length)];
+                            } while (newRestDay === day);
+                            restDays[i] = newRestDay;
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            return restDays;
+        }
+        
+        // 测试函数
+        function runTests() {
+            const testResults = document.getElementById('testResults');
+            const summary = document.getElementById('summary');
+            testResults.innerHTML = '';
+            summary.innerHTML = '';
+            
+            let totalTests = 0;
+            let passedTests = 0;
+            let failedTests = 0;
+            let errorDetails = [];
+            
+            // 测试不同员工数量的情况
+            const employeeCounts = [2, 3, 4, 5, 6, 7];
+            const iterationsPerCount = 20;
+            
+            employeeCounts.forEach(count => {
+                for (let iter = 0; iter < iterationsPerCount; iter++) {
+                    totalTests++;
+                    
+                    // 创建员工
+                    const employees = [];
+                    for (let i = 0; i < count; i++) {
+                        employees.push({ name: `员工${i+1}`, shifts: { morning: 0, evening: 0, full: 0, rest: 0 } });
+                    }
+                    
+                    // 生成排班表
+                    const schedule = generateSchedule(employees);
+                    
+                    // 检查是否有员工未排班
+                    let hasError = false;
+                    let errorInfo = '';
+                    
+                    schedule.forEach((daySchedule, dayIndex) => {
+                        daySchedule.employees.forEach((empSchedule, empIndex) => {
+                            if (!empSchedule.shift) {
+                                hasError = true;
+                                errorInfo = `员工${empIndex+1}在${daySchedule.dayOfWeek}没有排班！`;
+                            }
+                        });
+                    });
+                    
+                    // 显示测试结果
+                    const resultDiv = document.createElement('div');
+                    resultDiv.className = 'test-result';
+                    
+                    if (hasError) {
+                        failedTests++;
+                        resultDiv.className += ' error';
+                        resultDiv.innerHTML = `<strong>测试 ${totalTests} (${count}名员工, 迭代${iter+1})：失败</strong><br>错误：${errorInfo}`;
+                        errorDetails.push(errorInfo);
+                        
+                        // 显示失败的排班表
+                        const table = document.createElement('table');
+                        const headerRow = document.createElement('tr');
+                        headerRow.innerHTML = '<th>姓名</th>';
+                        schedule.forEach(day => {
+                            headerRow.innerHTML += `<th>${day.dayOfWeek}</th>`;
+                        });
+                        table.appendChild(headerRow);
+                        
+                        employees.forEach((emp, empIndex) => {
+                            const row = document.createElement('tr');
+                            row.innerHTML = `<td>${emp.name}</td>`;
+                            schedule.forEach(day => {
+                                const shift = day.employees[empIndex].shift;
+                                const shiftClass = `shift-${shift}`;
+                                row.innerHTML += `<td class="${shiftClass}">${shift}</td>`;
+                            });
+                            table.appendChild(row);
+                        });
+                        resultDiv.appendChild(table);
+                    } else {
+                        passedTests++;
+                        resultDiv.className += ' success';
+                        resultDiv.innerHTML = `<strong>测试 ${totalTests} (${count}名员工, 迭代${iter+1})：成功</strong><br>所有员工在所有天都有排班！`;
+                    }
+                    
+                    testResults.appendChild(resultDiv);
+                }
+            });
+            
+            // 显示总结
+            summary.innerHTML = `
+                <p><strong>总测试次数：</strong> ${totalTests}</p>
+                <p><strong>通过次数：</strong> ${passedTests}</p>
+                <p><strong>失败次数：</strong> ${failedTests}</p>
+                <p><strong>通过率：</strong> ${((passedTests/totalTests)*100).toFixed(2)}%</p>
+            `;
+            
+            if (failedTests > 0) {
+                summary.innerHTML += `<h3>失败详情：</h3>`;
+                errorDetails.forEach((error, index) => {
+                    summary.innerHTML += `<p>${index+1}. ${error}</p>`;
+                });
+            }
+        }
+    </script>
+</body>
+</html>

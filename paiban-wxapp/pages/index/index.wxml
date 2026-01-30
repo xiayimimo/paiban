@@ -1,0 +1,81 @@
+<view class="container">
+  <h1>排班</h1>
+  
+  <view class="section">
+    <h2>员工设置</h2>
+    <view id="employeeInputs">
+      <view class="employee-input">
+        <input type="text" id="employee1" placeholder="员工1姓名" value="张三" bindinput="onEmployeeInput" data-index="0"></input>
+      </view>
+      <view class="employee-input">
+        <input type="text" id="employee2" placeholder="员工2姓名" value="李四" bindinput="onEmployeeInput" data-index="1"></input>
+      </view>
+    </view>
+  </view>
+  
+  <view class="section">
+    <h2>排班规则</h2>
+    <view class="shift-types">
+      <label>
+        <checkbox id="shiftMorning" checked></checkbox>
+        早班
+      </label>
+      <label>
+        <checkbox id="shiftEvening" checked></checkbox>
+        晚班
+      </label>
+      <label>
+        <checkbox id="shiftFull" checked></checkbox>
+        全班
+      </label>
+    </view>
+  </view>
+  
+  <view class="section">
+    <button bindtap="generateSchedule">生成排班表</button>
+  </view>
+  
+  <view class="section">
+    <h2>排班结果</h2>
+    <view style="margin-bottom: 15rpx;">
+      <button bindtap="saveTableAsImage" style="background-color: #2196F3; margin-right: 10rpx;">保存排班表</button>
+      <button bindtap="generateSchedule">重新生成</button>
+    </view>
+    <view class="schedule-container">
+      <view id="scheduleTable" class="table">
+        <!-- 表头 -->
+        <view class="table-row header">
+          <!-- 角落单元格 -->
+          <view class="table-cell diagonal-cell">
+            <text class="diagonal-name">姓名</text>
+            <text class="diagonal-date">日期</text>
+          </view>
+          <!-- 星期几列标题 -->
+          <view wx:for="{{schedule}}" wx:key="index" class="table-cell header-cell">
+            <view style="font-weight: bold;">{{item.dayOfWeek}}</view>
+            <view style="font-size: 12px; color: #666;">{{item.date}}</view>
+          </view>
+        </view>
+        <!-- 员工行 -->
+        <view wx:for="{{employees}}" wx:key="id" class="table-row">
+          <!-- 员工姓名单元格 -->
+          <view class="table-cell employee-cell">{{item.name}}</view>
+          <!-- 班次单元格 -->
+          <view wx:for="{{schedule}}" wx:key="index" class="table-cell">
+            <view class="shift-{{item.employees[index].shift}}">{{getShiftText(item.employees[index].shift)}}</view>
+          </view>
+        </view>
+      </view>
+    </view>
+    
+    <view class="stats" id="statsContainer">
+      <view wx:for="{{employees}}" wx:key="id" class="stat-item">
+        <view class="label">{{item.name}}</view>
+        <view class="value">{{item.shifts.morning + item.shifts.evening + item.shifts.full}}</view>
+        <view style="font-size: 12px; color: #999;">
+          早班: {{item.shifts.morning}} | 晚班: {{item.shifts.evening}} | 全班: {{item.shifts.full}} | 休息: {{item.shifts.rest}}
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

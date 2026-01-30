@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>排班</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            body {
+                padding: 5px;
+                font-size: 14px;
+            }
+            
+            .container {
+                padding: 15px;
+                border-radius: 8px;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+                margin-bottom: 20px;
+            }
+            
+            h2 {
+                font-size: 1.2em;
+                margin-bottom: 15px;
+            }
+            
+            .section {
+                margin-bottom: 25px;
+            }
+            
+            #employeeCount {
+                font-size: 16px;
+                padding: 10px 15px;
+                width: 100%;
+                margin-bottom: 15px;
+            }
+            
+            .employee-input {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .employee-input input {
+                font-size: 16px;
+                padding: 12px;
+                border-radius: 8px;
+            }
+            
+            button {
+                font-size: 16px;
+                padding: 14px 28px;
+                width: 100%;
+                margin-bottom: 12px;
+                border-radius: 25px;
+                touch-action: manipulation;
+            }
+            
+            .shift-types {
+                flex-direction: column;
+                gap: 12px;
+                margin-bottom: 20px;
+            }
+            
+            .shift-types label {
+                font-size: 16px;
+                padding: 12px 15px;
+                border-radius: 8px;
+                border: 2px solid #e0e0e0;
+                transition: all 0.3s ease;
+            }
+            
+            .shift-types label input[type="checkbox"] {
+                width: 18px;
+                height: 18px;
+                margin-right: 10px;
+            }
+            
+            /* 表格容器自适应 */
+            .schedule-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                padding: 0;
+                margin: 0;
+                width: 100%;
+            }
+            
+            /* 调整表格大小以适应屏幕 */
+            table {
+                font-size: 14px;
+                border-radius: 8px;
+                width: 100%;
+                transform: scale(1);
+                transform-origin: top center;
+            }
+            
+            th, td {
+                padding: 12px 6px;
+                min-width: 80px;
+                border: 1px solid #e0e0e0;
+            }
+            
+            .diagonal-cell {
+                height: 80px;
+                width: 80px;
+            }
+            
+            .diagonal-name, .diagonal-date {
+                font-size: 12px;
+                padding: 4px;
+            }
+            
+            .shift-morning, .shift-evening, .shift-full, .shift-rest {
+                padding: 6px 8px;
+                font-size: 14px;
+                border-radius: 8px;
+                display: block;
+                width: 100%;
+                text-align: center;
+                white-space: nowrap;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 15px;
+                padding: 15px;
+            }
+            
+            .stat-item {
+                text-align: center;
+                padding: 12px;
+                background-color: white;
+                border-radius: 8px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            }
+            
+            .stat-item .label {
+                font-size: 16px;
+                font-weight: bold;
+                margin-bottom: 5px;
+            }
+            
+            .stat-item .value {
+                font-size: 24px;
+                font-weight: bold;
+                margin-bottom: 5px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 5px;
+            }
+            
+            h1 {
+                font-size: 1.5em;
+            }
+            
+            h2 {
+                font-size: 1.1em;
+            }
+            
+            /* 调整表格大小以适应小屏幕 */
+            table {
+                font-size: 12px;
+                transform: scale(0.95);
+                transform-origin: top center;
+                margin: 0;
+            }
+            
+            th, td {
+                padding: 8px 4px;
+                min-width: 70px;
+                border: 1px solid #e0e0e0;
+            }
+            
+            .shift-morning, .shift-evening, .shift-full, .shift-rest {
+                padding: 4px 6px;
+                font-size: 12px;
+                border-radius: 6px;
+            }
+            
+            .stat-item {
+                padding: 10px;
+            }
+            
+            .stat-item .label {
+                font-size: 14px;
+            }
+            
+            .stat-item .value {
+                font-size: 20px;
+            }
+            
+            /* 优化移动端表格头部显示 */
+            table th {
+                font-size: 11px;
+            }
+            
+            /* 优化角落单元格 */
+            .diagonal-cell {
+                height: 70px;
+                width: 70px;
+            }
+            
+            .diagonal-name, .diagonal-date {
+                font-size: 11px;
+                padding: 2px;
+            }
+            
+            /* 优化表头日期显示 */
+            table th div {
+                font-size: 11px;
+            }
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+        }
+        
+        h2 {
+            color: #555;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        
+        .employee-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .employee-input input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .employee-input input:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
+        }
+        
+        /* 优化选择器样式 */
+        #employeeCount {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            background-color: white;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+        
+        #employeeCount:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
+        }
+        
+        .shift-types {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .shift-types label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 8px 15px;
+            background-color: #f0f0f0;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        button:hover {
+            background-color: #45a049;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            transform: translateY(-1px);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        button[style*="background-color: #2196F3"] {
+            background-color: #2196F3;
+        }
+        
+        button[style*="background-color: #2196F3"]:hover {
+            background-color: #1976D2;
+        }
+        
+        .schedule-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-top: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        table th:first-child {
+            border-top-left-radius: 8px;
+        }
+        
+        table th:last-child {
+            border-top-right-radius: 8px;
+        }
+        
+        table tr:last-child td:first-child {
+            border-bottom-left-radius: 8px;
+        }
+        
+        table tr:last-child td:last-child {
+            border-bottom-right-radius: 8px;
+        }
+        
+        th, td {
+            padding: 15px;
+            text-align: center;
+            border: 1px solid #e0e0e0;
+        }
+        
+        th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        
+        .diagonal-cell {
+            position: relative;
+            height: 80px;
+            width: 80px;
+        }
+        
+        .diagonal-cell::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, transparent 49%, #666 49%, #666 51%, transparent 51%);
+            z-index: 1;
+        }
+        
+        .diagonal-name {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+            z-index: 2;
+            background-color: #f8f9fa;
+            padding: 2px 4px;
+            border-radius: 2px;
+        }
+        
+        .diagonal-date {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+            z-index: 2;
+            background-color: #f8f9fa;
+            padding: 2px 4px;
+            border-radius: 2px;
+        }
+        
+        
+        
+        .corner-year {
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            font-size: 14px;
+            font-weight: bold;
+            color: #666;
+            z-index: 3;
+            background-color: rgba(248, 249, 250, 0.95);
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        
+        .shift-morning {
+            background-color: #e3f2fd;
+            color: #1565c0;
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-weight: 500;
+            box-shadow: 0 1px 3px rgba(21, 101, 192, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .shift-morning:hover {
+            background-color: #bbdefb;
+            box-shadow: 0 2px 5px rgba(21, 101, 192, 0.2);
+        }
+        
+        .shift-evening {
+            background-color: #fff3e0;
+            color: #ef6c00;
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-weight: 500;
+            box-shadow: 0 1px 3px rgba(239, 108, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .shift-evening:hover {
+            background-color: #ffe0b2;
+            box-shadow: 0 2px 5px rgba(239, 108, 0, 0.2);
+        }
+        
+        .shift-full {
+            background-color: #ffebee;
+            color: #c62828;
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-weight: 500;
+            box-shadow: 0 1px 3px rgba(198, 40, 40, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .shift-full:hover {
+            background-color: #ffcdd2;
+            box-shadow: 0 2px 5px rgba(198, 40, 40, 0.2);
+        }
+        
+        .shift-rest {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            padding: 8px 12px;
+            border-radius: 12px;
+            font-weight: 500;
+            box-shadow: 0 1px 3px rgba(46, 125, 50, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .shift-rest:hover {
+            background-color: #c8e6c9;
+            box-shadow: 0 2px 5px rgba(46, 125, 50, 0.2);
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-item .label {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .stat-item .value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>排班</h1>
+        
+        <div class="section">
+            <h2>员工设置</h2>
+            <div style="margin-bottom: 15px;">
+                <label for="employeeCount">员工数量：</label>
+                <select id="employeeCount" onchange="updateEmployeeInputs()">
+                    <option value="2" selected>2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    <option value="7">7</option>
+                </select>
+            </div>
+            <div id="employeeInputs">
+                <div class="employee-input">
+                    <input type="text" id="employee1" placeholder="员工1姓名" value="张三">
+                </div>
+                <div class="employee-input">
+                    <input type="text" id="employee2" placeholder="员工2姓名" value="李四">
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>排班规则</h2>
+            <div class="shift-types">
+                <label>
+                    <input type="checkbox" id="shiftMorning" checked>
+                    早班
+                </label>
+                <label>
+                    <input type="checkbox" id="shiftEvening" checked>
+                    晚班
+                </label>
+                <label>
+                    <input type="checkbox" id="shiftFull" checked>
+                    全班
+                </label>
+            </div>
+        </div>
+        
+        <div class="section">
+            <button onclick="generateSchedule()">生成排班表</button>
+        </div>
+        
+        <div class="section">
+                <h2>排班结果</h2>
+                <div style="margin-bottom: 15px;">
+                    <button onclick="saveTableAsImage()" style="background-color: #2196F3; margin-right: 10px;">保存排班表</button>
+                    <button onclick="generateSchedule()">重新生成</button>
+                </div>
+                <div class="schedule-container">
+                    <table id="scheduleTable">
+                        <thead>
+                            <tr>
+                                <th class="diagonal-cell"><span class="diagonal-name">姓名</span><span class="diagonal-date">日期</span></th>
+                            </tr>
+                        </thead>
+                        <tbody id="scheduleBody">
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="stats" id="statsContainer">
+                </div>
+                
+
+
+            </div>
+    </div>
+    
+    <script>
+        // 更新员工输入框数量
+        function updateEmployeeInputs() {
+            const count = parseInt(document.getElementById('employeeCount').value);
+            const container = document.getElementById('employeeInputs');
+            const currentCount = container.children.length;
+            
+            if (count > currentCount) {
+                // 添加新的员工输入框
+                for (let i = currentCount + 1; i <= count; i++) {
+                    const inputDiv = document.createElement('div');
+                    inputDiv.className = 'employee-input';
+                    inputDiv.innerHTML = `<input type="text" id="employee${i}" placeholder="员工${i}姓名">`;
+                    container.appendChild(inputDiv);
+                }
+            } else if (count < currentCount) {
+                // 移除多余的员工输入框
+                for (let i = currentCount; i > count; i--) {
+                    container.removeChild(container.lastChild);
+                }
+            }
+        }
+
+        function generateSchedule() {
+            const employees = [];
+            const inputs = document.querySelectorAll('#employeeInputs input');
+            
+            inputs.forEach((input, index) => {
+                if (input.value.trim()) {
+                    employees.push({
+                        id: index + 1,
+                        name: input.value.trim(),
+                        shifts: {
+                            morning: 0,
+                            evening: 0,
+                            full: 0,
+                            rest: 0
+                        }
+                    });
+                }
+            });
+            
+            if (employees.length < 2) {
+                alert('请至少输入2位员工姓名');
+                return;
+            }
+            
+            const daysOfWeek = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+            const schedule = [];
+            
+            // 生成本周的日期，从周一开始
+            const today = new Date();
+            const firstDayOfWeek = new Date(today);
+            // 如果今天是周日，向前推6天到周一
+            if (today.getDay() === 0) {
+                firstDayOfWeek.setDate(today.getDate() - 6);
+            } else {
+                firstDayOfWeek.setDate(today.getDate() - (today.getDay() - 1));
+            }
+            
+            // 为每个员工分配休息天
+            const restDays = assignRestDays(employees.length);
+            
+            // 初始化班次计数器，用于平衡分配
+            const morningCount = new Array(employees.length).fill(0);
+            const eveningCount = new Array(employees.length).fill(0);
+            // 跟踪前一天的班次
+            const previousShift = new Array(employees.length).fill('');
+            // 跟踪连续相同班次的天数
+            const consecutiveShiftCount = new Array(employees.length).fill(0);
+            
+            for (let day = 0; day < 7; day++) {
+                const currentDate = new Date(firstDayOfWeek);
+                currentDate.setDate(firstDayOfWeek.getDate() + day);
+                
+                // 获取当前日期在一周中的索引（0=周日, 1=周一, ..., 6=周六）
+                const weekDay = currentDate.getDay();
+                
+                let dayIndex;
+                if (currentDate.getDay() === 0) {
+                    dayIndex = 6; // 周日对应数组最后一个元素
+                } else {
+                    dayIndex = currentDate.getDay() - 1; // 周一到周六对应数组前6个元素
+                }
+                
+                const daySchedule = {
+                    date: formatDate(currentDate),
+                    dayOfWeek: daysOfWeek[dayIndex],
+                    employees: []
+                };
+                
+                // 分配班次给每个员工
+                // 先检查今天是否有员工休息
+                const hasRestToday = restDays.some(rd => rd === weekDay);
+                
+                // 2个员工的特殊处理
+                if (employees.length === 2) {
+                    // 检查是否有员工休息
+                    if (restDays[0] === weekDay) {
+                        // 员工0休息，员工1上全班
+                        daySchedule.employees.push({
+                            name: employees[0].name,
+                            shift: 'rest'
+                        });
+                        daySchedule.employees.push({
+                            name: employees[1].name,
+                            shift: 'full'
+                        });
+                        
+                        employees[0].shifts.rest++;
+                        employees[1].shifts.full++;
+                        morningCount[1]++;
+                        eveningCount[1]++;
+                    } else if (restDays[1] === weekDay) {
+                        // 员工1休息，员工0上全班
+                        daySchedule.employees.push({
+                            name: employees[0].name,
+                            shift: 'full'
+                        });
+                        daySchedule.employees.push({
+                            name: employees[1].name,
+                            shift: 'rest'
+                        });
+                        
+                        employees[0].shifts.full++;
+                        employees[1].shifts.rest++;
+                        morningCount[0]++;
+                        eveningCount[0]++;
+                    } else {
+                            // 都不休息，必须分配一人早班一人晚班
+                            let emp0Shift, emp1Shift;
+                            
+                            // 优先延续前一天的班次（支持连续排班）
+                            if (day > 0) {
+                                emp0Shift = previousShift[0] === 'rest' ? 'morning' : previousShift[0];
+                                emp1Shift = previousShift[1] === 'rest' ? 'evening' : previousShift[1];
+                                
+                                // 检查是否冲突（两人不能上相同的班次）
+                                if (emp0Shift === emp1Shift) {
+                                    // 如果冲突，交换其中一人的班次
+                                    emp1Shift = emp1Shift === 'morning' ? 'evening' : 'morning';
+                                }
+                            } else {
+                                // 第一天按日期轮换
+                                if (day % 2 === 0) {
+                                    emp0Shift = 'morning';
+                                    emp1Shift = 'evening';
+                                } else {
+                                    emp0Shift = 'evening';
+                                    emp1Shift = 'morning';
+                                }
+                            }
+                            
+                            // 检查班次数量平衡，如果差异太大则调整
+                            const morningDiff = morningCount[0] - morningCount[1];
+                            if (morningDiff > 1) {
+                                // 员工0早班过多，强制调整
+                                emp0Shift = 'evening';
+                                emp1Shift = 'morning';
+                            } else if (morningDiff < -1) {
+                                // 员工1早班过多，强制调整
+                                emp0Shift = 'morning';
+                                emp1Shift = 'evening';
+                            }
+                            
+                            // 不再检查连续排班，允许连续多天排早班或晚班
+                            
+                            // 检查是否会导致连续3天相同班次
+                            if (day >= 2) {
+                                // 检查员工0是否即将连续3天相同班次
+                                if (previousShift[0] === emp0Shift && previousShift[0] === schedule[day-2].employees[0].shift) {
+                                    emp0Shift = emp0Shift === 'morning' ? 'evening' : 'morning';
+                                    // 确保两人班次不同
+                                    emp1Shift = emp1Shift === 'morning' ? 'evening' : 'morning';
+                                }
+                                // 检查员工1是否即将连续3天相同班次
+                                if (previousShift[1] === emp1Shift && previousShift[1] === schedule[day-2].employees[1].shift) {
+                                    emp1Shift = emp1Shift === 'morning' ? 'evening' : 'morning';
+                                    // 确保两人班次不同
+                                    emp0Shift = emp0Shift === 'morning' ? 'evening' : 'morning';
+                                }
+                            }
+                            
+                            // 最终安全检查：确保班次不为空且两人班次不同
+                            if (!emp0Shift || !emp1Shift || emp0Shift === emp1Shift) {
+                                // 如果出现问题，重置班次分配
+                                emp0Shift = 'morning';
+                                emp1Shift = 'evening';
+                            }
+                            
+                            // 分配班次
+                            daySchedule.employees.push({
+                                name: employees[0].name,
+                                shift: emp0Shift
+                            });
+                            daySchedule.employees.push({
+                                name: employees[1].name,
+                                shift: emp1Shift
+                            });
+                            
+                            // 更新统计
+                            employees[0].shifts[emp0Shift]++;
+                            employees[1].shifts[emp1Shift]++;
+                            if (emp0Shift === 'morning') morningCount[0]++;
+                            if (emp0Shift === 'evening') eveningCount[0]++;
+                            if (emp1Shift === 'morning') morningCount[1]++;
+                            if (emp1Shift === 'evening') eveningCount[1]++;
+                            
+                            // 更新前一天班次记录
+                            previousShift[0] = emp0Shift;
+                            previousShift[1] = emp1Shift;
+                        }
+                } else {
+                    // 多个员工情况
+                    // 首先分配班次
+                    const shifts = [];
+                    const workingEmployees = [];
+                    
+                    // 收集今天不休息的员工
+                    employees.forEach((employee, empIndex) => {
+                        if (restDays[empIndex] === weekDay) {
+                            shifts.push('rest');
+                        } else {
+                            workingEmployees.push(empIndex);
+                            shifts.push('');
+                        }
+                    });
+                    
+                    // 为所有员工分配班次（确保每个人都有排班）
+                    workingEmployees.forEach(empIndex => {
+                        // 如果只有一名员工工作，分配全班
+                        if (workingEmployees.length === 1) {
+                            shifts[empIndex] = 'full';
+                            return;
+                        }
+                        
+                        // 首先确保有员工上早班和晚班
+                        let shift = '';
+                        
+                        // 优先分配早班和晚班
+                        const hasMorning = shifts.some(s => s === 'morning');
+                        const hasEvening = shifts.some(s => s === 'evening');
+                        
+                        // 如果还没有早班和晚班，则分配
+                        if (!hasMorning && !hasEvening) {
+                            // 找出早班最少的员工分配早班
+                            let minMorningCount = Infinity;
+                            let minMorningIndex = -1;
+                            workingEmployees.forEach(idx => {
+                                if (morningCount[idx] < minMorningCount) {
+                                    minMorningCount = morningCount[idx];
+                                    minMorningIndex = idx;
+                                }
+                            });
+                            
+                            if (minMorningIndex === empIndex) {
+                                shift = 'morning';
+                            } else {
+                                // 找出晚班最少的员工分配晚班
+                                let minEveningCount = Infinity;
+                                let minEveningIndex = -1;
+                                workingEmployees.forEach(idx => {
+                                    if (eveningCount[idx] < minEveningCount) {
+                                        minEveningCount = eveningCount[idx];
+                                        minEveningIndex = idx;
+                                    }
+                                });
+                                
+                                if (minEveningIndex === empIndex) {
+                                    shift = 'evening';
+                                } else {
+                                    // 如果当前员工既不是早班最少也不是晚班最少，根据历史班次数量分配
+                                    shift = morningCount[empIndex] <= eveningCount[empIndex] ? 'morning' : 'evening';
+                                }
+                            }
+                        } else if (!hasMorning) {
+                            // 只有晚班，需要分配早班
+                            shift = 'morning';
+                        } else if (!hasEvening) {
+                            // 只有早班，需要分配晚班
+                            shift = 'evening';
+                        } else {
+                            // 早班和晚班都已有员工，根据历史班次数量分配
+                            shift = morningCount[empIndex] <= eveningCount[empIndex] ? 'morning' : 'evening';
+                        }
+                        
+                        // 优先延续前一天的有效班次（支持连续排班）
+                        if (day > 0 && previousShift[empIndex] !== 'rest' && previousShift[empIndex] !== '') {
+                            // 检查是否会导致连续3天相同班次
+                            let isConsecutive = false;
+                            if (day >= 2) {
+                                const day2Shift = schedule[day-2].employees[empIndex].shift;
+                                const day1Shift = previousShift[empIndex];
+                                if (day2Shift === day1Shift && day1Shift === shift) {
+                                    isConsecutive = true;
+                                }
+                            }
+                            // 如果不会连续3天相同班次，延续前一天的班次
+                            if (!isConsecutive) {
+                                shift = previousShift[empIndex];
+                            }
+                        }
+                        
+                        // 限制每个员工的早班和晚班数量不超过4天
+                        if (shift === 'morning' && morningCount[empIndex] >= 4) {
+                            shift = 'evening';
+                        } else if (shift === 'evening' && eveningCount[empIndex] >= 4) {
+                            shift = 'morning';
+                        }
+                        
+                        // 如果早班和晚班都已经满了，分配全班
+                        if ((shift === 'morning' && morningCount[empIndex] >= 4) || 
+                            (shift === 'evening' && eveningCount[empIndex] >= 4)) {
+                            shift = 'full';
+                        }
+                        
+                        // 最终确保分配了有效的班次
+                        if (shift === '') {
+                            // 绝对确保不会有空班次 - 最后一道防线
+                            if (morningCount[empIndex] <= eveningCount[empIndex]) {
+                                shift = 'morning';
+                            } else {
+                                shift = 'evening';
+                            }
+                            // 记录这是最后的备用分配
+                            console.log(`为员工${empIndex+1}分配了备用班次: ${shift}`);
+                        }
+                        
+                        shifts[empIndex] = shift;
+                    });
+                    
+                    // 检查是否会导致连续3天相同班次
+                    shifts.forEach((shift, empIndex) => {
+                        if (shift !== 'rest' && day >= 2) {
+                            // 获取该员工前两天的班次
+                            const day2Shift = schedule[day-2].employees[empIndex].shift;
+                            const day1Shift = previousShift[empIndex];
+                            
+                            // 如果即将连续3天相同班次，则调整
+                            if (day1Shift === shift && day2Shift === shift) {
+                                // 尝试切换到其他班次
+                                if (shift === 'morning' && eveningCount[empIndex] < 4) {
+                                    shifts[empIndex] = 'evening';
+                                } else if (shift === 'evening' && morningCount[empIndex] < 4) {
+                                    shifts[empIndex] = 'morning';
+                                } else if (shift === 'morning' || shift === 'evening') {
+                                    shifts[empIndex] = 'full';
+                                }
+                            }
+                        }
+                    });
+                    
+                    // 更新班次计数器、员工统计和前一天班次记录
+                    shifts.forEach((shift, empIndex) => {
+                        // 确保所有员工都有有效的班次
+                        if (shift === '') {
+                            // 如果没有分配班次，检查该员工是否应该休息
+                            if (restDays[empIndex] === weekDay) {
+                                // 确实应该休息
+                                shifts[empIndex] = 'rest';
+                                employees[empIndex].shifts.rest++;
+                            } else {
+                                // 不应该休息，必须分配一个工作班次
+                                if (morningCount[empIndex] <= eveningCount[empIndex]) {
+                                    shifts[empIndex] = 'morning';
+                                    morningCount[empIndex]++;
+                                } else {
+                                    shifts[empIndex] = 'evening';
+                                    eveningCount[empIndex]++;
+                                }
+                                employees[empIndex].shifts[shifts[empIndex]]++;
+                            }
+                        } else {
+                            if (shift === 'morning') morningCount[empIndex]++;
+                            if (shift === 'evening') eveningCount[empIndex]++;
+                            
+                            employees[empIndex].shifts[shift]++;
+                        }
+                        
+                        daySchedule.employees.push({
+                            name: employees[empIndex].name,
+                            shift: shifts[empIndex]
+                        });
+                        
+                        // 更新前一天班次记录
+                        previousShift[empIndex] = shifts[empIndex];
+                    });
+                }
+                
+                // 检查是否有员工在今天没有排班
+                let hasError = false;
+                daySchedule.employees.forEach((empSchedule, empIndex) => {
+                    if (!empSchedule.shift) {
+                        console.error(`错误：${empSchedule.name}在${daySchedule.dayOfWeek}没有排班！`);
+                        hasError = true;
+                        // 立即修复：为该员工分配休息或工作班次
+                        if (restDays[empIndex] === weekDay) {
+                            empSchedule.shift = 'rest';
+                            employees[empIndex].shifts.rest++;
+                        } else {
+                            empSchedule.shift = morningCount[empIndex] <= eveningCount[empIndex] ? 'morning' : 'evening';
+                            employees[empIndex].shifts[empSchedule.shift]++;
+                            if (empSchedule.shift === 'morning') morningCount[empIndex]++;
+                            if (empSchedule.shift === 'evening') eveningCount[empIndex]++;
+                        }
+                        console.log(`已修复：${empSchedule.name}在${daySchedule.dayOfWeek}的班次为${empSchedule.shift}`);
+                    }
+                });
+                
+                schedule.push(daySchedule);
+        }
+        
+        // 最终检查：确保所有员工在所有天都有排班
+        let allScheduled = true;
+        schedule.forEach((daySchedule, day) => {
+            daySchedule.employees.forEach((empSchedule, empIndex) => {
+                if (!empSchedule.shift) {
+                    console.error(`最终检查错误：${empSchedule.name}在${daySchedule.dayOfWeek}没有排班！`);
+                    allScheduled = false;
+                }
+            });
+        });
+        
+        if (allScheduled) {
+            console.log("✅ 所有员工在所有天都有排班！");
+        } else {
+            console.error("❌ 存在员工在某些天没有排班的情况！");
+        }
+        
+        displaySchedule(schedule, employees);
+        }
+        
+        function assignRestDays(numEmployees) {
+            const restDays = [];
+            const days = [0, 1, 2, 3, 4, 5, 6];
+            
+            // 确保每天至少有一名员工工作，并且每个员工只休息一天
+            if (numEmployees <= 7) {
+                // 员工数量 <= 7，确保每天最多只有一名员工休息
+                const availableDays = [...days];
+                for (let i = 0; i < numEmployees; i++) {
+                    const randomIndex = Math.floor(Math.random() * availableDays.length);
+                    restDays.push(availableDays[randomIndex]);
+                    availableDays.splice(randomIndex, 1);
+                }
+            } else {
+                // 员工数量超过7，允许同一天有多个员工休息
+                // 但要确保每天至少有一名员工工作，并且每个员工只休息一天
+                const mustWork = new Array(7).fill(false);
+                const dayCounts = new Array(7).fill(0); // 记录每天休息的员工数量
+                
+                // 为每个员工分配休息天
+                for (let i = 0; i < numEmployees; i++) {
+                    let randomDay;
+                    let attempts = 0;
+                    const maxAttempts = 10;
+                    
+                    do {
+                        randomDay = days[Math.floor(Math.random() * days.length)];
+                        attempts++;
+                        
+                        // 确保每天至少有一名员工工作
+                        if (i < 7 && !mustWork[randomDay]) {
+                            // 前7个员工，每个员工分配不同的休息天
+                            restDays.push(randomDay);
+                            mustWork[randomDay] = true;
+                            dayCounts[randomDay]++;
+                            break;
+                        }
+                        
+                        // 检查是否会导致连续休息3天
+                        let isConsecutive = false;
+                        if (i >= 2) {
+                            if (restDays[i-1] === randomDay - 1 && restDays[i-2] === randomDay - 2) {
+                                isConsecutive = true;
+                            }
+                            if (restDays[i-1] === randomDay + 1 && restDays[i-2] === randomDay + 2) {
+                                isConsecutive = true;
+                            }
+                        }
+                        
+                        if (!isConsecutive || attempts >= maxAttempts) {
+                            restDays.push(randomDay);
+                            dayCounts[randomDay]++;
+                            break;
+                        }
+                    } while (true);
+                }
+            }
+            
+            // 最终检查：确保每天至少有一名员工工作
+            const workingDays = new Array(7).fill(false);
+            for (let day = 0; day < 7; day++) {
+                let hasWorker = false;
+                for (let i = 0; i < numEmployees; i++) {
+                    if (restDays[i] !== day) {
+                        hasWorker = true;
+                        break;
+                    }
+                }
+                if (!hasWorker) {
+                    // 找到第一个休息在其他天的员工，让他在这天工作
+                    for (let i = 0; i < numEmployees; i++) {
+                        if (restDays[i] !== day) {
+                            // 随机选择一个其他天作为该员工的新休息天
+                            let newRestDay;
+                            do {
+                                newRestDay = days[Math.floor(Math.random() * days.length)];
+                            } while (newRestDay === day);
+                            restDays[i] = newRestDay;
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            return restDays;
+        }
+        
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        
+        function displaySchedule(schedule, employees) {
+            const table = document.getElementById('scheduleTable');
+            const thead = table.querySelector('thead');
+            const tbody = table.querySelector('tbody');
+            
+            // 清空现有内容
+            thead.innerHTML = '';
+            tbody.innerHTML = '';
+            
+            // 创建表头行
+            const headerRow = document.createElement('tr');
+            
+            // 创建角落单元格
+            const cornerTh = document.createElement('th');
+            cornerTh.className = 'diagonal-cell';
+            cornerTh.innerHTML = '<span class="diagonal-name">姓名</span><span class="diagonal-date">日期</span>';
+            headerRow.appendChild(cornerTh);
+            
+            // 添加星期几列标题
+            schedule.forEach((day, dayIndex) => {
+                const th = document.createElement('th');
+                th.innerHTML = `<div style="font-weight: bold;">${day.dayOfWeek}</div><div style="font-size: 12px; color: #666;">${day.date}</div>`;
+                th.style.verticalAlign = 'middle';
+                headerRow.appendChild(th);
+            });
+            
+            thead.appendChild(headerRow);
+            
+            // 创建员工行
+            employees.forEach((employee, empIndex) => {
+                const row = document.createElement('tr');
+                
+                // 员工姓名单元格
+                const empCell = document.createElement('td');
+                empCell.textContent = employee.name;
+                empCell.style.fontWeight = 'bold';
+                empCell.style.verticalAlign = 'middle';
+                row.appendChild(empCell);
+                
+                // 为每个员工添加班次单元格
+                schedule.forEach((day, dayIndex) => {
+                    const cell = document.createElement('td');
+                    const shiftDiv = document.createElement('div');
+                    
+                    let shiftText = '';
+                    let shiftClass = '';
+                    
+                    const shift = day.employees[empIndex].shift;
+                    
+                    switch(shift) {
+                        case 'morning':
+                            shiftText = '早班';
+                            shiftClass = 'shift-morning';
+                            break;
+                        case 'evening':
+                            shiftText = '晚班';
+                            shiftClass = 'shift-evening';
+                            break;
+                        case 'full':
+                            shiftText = '全班';
+                            shiftClass = 'shift-full';
+                            break;
+                        case 'rest':
+                            shiftText = '休息';
+                            shiftClass = 'shift-rest';
+                            break;
+                    }
+                    
+                    shiftDiv.textContent = shiftText;
+                    shiftDiv.className = shiftClass;
+                    cell.appendChild(shiftDiv);
+                    row.appendChild(cell);
+                });
+                
+                tbody.appendChild(row);
+            });
+            
+            displayStats(employees);
+        }
+        
+        function displayStats(employees) {
+            const statsContainer = document.getElementById('statsContainer');
+            statsContainer.innerHTML = '';
+            
+            employees.forEach(employee => {
+                const totalShifts = employee.shifts.morning + employee.shifts.evening + employee.shifts.full;
+                const statDiv = document.createElement('div');
+                statDiv.className = 'stat-item';
+                
+                statDiv.innerHTML = `
+                    <div class="label">${employee.name}</div>
+                    <div class="value">${totalShifts}</div>
+                    <div style="font-size: 12px; color: #999;">
+                        早班: ${employee.shifts.morning} | 晚班: ${employee.shifts.evening} | 全班: ${employee.shifts.full} | 休息: ${employee.shifts.rest}
+                    </div>
+                `;
+                
+                statsContainer.appendChild(statDiv);
+            });
+        }
+        
+        // 动态加载html2canvas库
+        function loadHtml2Canvas() {
+            return new Promise((resolve) => {
+                if (window.html2canvas) {
+                    resolve();
+                    return;
+                }
+                
+                const script = document.createElement('script');
+                script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+                script.onload = resolve;
+                document.body.appendChild(script);
+            });
+        }
+        
+        async function saveTableAsImage() {
+            // 加载html2canvas库
+            await loadHtml2Canvas();
+            
+            const table = document.getElementById('scheduleTable');
+            const container = table.parentNode;
+            
+            // 保存原始样式
+            const originalContainerStyle = container.style.cssText;
+            const originalTableStyle = table.style.cssText;
+            
+            try {
+                // 移除所有可能影响截图的样式
+                container.style.overflow = 'visible';
+                container.style.height = 'auto';
+                container.style.width = 'auto';
+                container.style.maxWidth = 'none';
+                container.style.position = 'static';
+                container.style.margin = '0';
+                container.style.padding = '0';
+                
+                table.style.transform = 'none';
+                table.style.position = 'static';
+                table.style.overflow = 'visible';
+                table.style.width = 'auto';
+                table.style.whiteSpace = 'nowrap';
+                table.style.borderCollapse = 'collapse';
+                
+                // 确保所有单元格内容完整显示
+                const cells = table.querySelectorAll('th, td');
+                cells.forEach(cell => {
+                    cell.style.whiteSpace = 'nowrap';
+                    cell.style.overflow = 'visible';
+                    cell.style.textOverflow = 'clip';
+                    cell.style.border = '1px solid #e0e0e0';
+                });
+                
+                // 强制浏览器重新计算尺寸
+                document.body.offsetHeight;
+                
+                // 等待更长时间确保DOM渲染完成
+                await new Promise(resolve => setTimeout(resolve, 800));
+                
+                // 使用getBoundingClientRect获取更准确的表格尺寸
+                const rect = table.getBoundingClientRect();
+                const tableWidth = Math.ceil(rect.width);
+                const tableHeight = Math.ceil(rect.height);
+                
+                // 手动计算更准确的尺寸，确保所有内容都被包含
+                const allCells = table.querySelectorAll('th, td');
+                let calculatedWidth = 0;
+                let calculatedHeight = 0;
+                
+                // 计算第一行所有单元格的宽度总和
+                const firstRowCells = table.querySelector('tr').querySelectorAll('th, td');
+                firstRowCells.forEach(cell => {
+                    calculatedWidth += cell.getBoundingClientRect().width;
+                });
+                
+                // 计算所有行的高度总和
+                const rows = table.querySelectorAll('tr');
+                rows.forEach(row => {
+                    calculatedHeight += row.getBoundingClientRect().height;
+                });
+                
+                // 取最大值确保所有内容都被包含
+                const finalWidth = Math.max(tableWidth, calculatedWidth);
+                const finalHeight = Math.max(tableHeight, calculatedHeight);
+                
+                // 设置容器尺寸以容纳完整表格
+                container.style.width = finalWidth + 'px';
+                container.style.height = finalHeight + 'px';
+                
+                // 再次强制重排和等待
+                document.body.offsetHeight;
+                await new Promise(resolve => setTimeout(resolve, 200));
+                
+                // 使用html2canvas捕获整个表格容器，增加更多配置选项
+                const canvas = await html2canvas(container, {
+                    backgroundColor: '#ffffff',
+                    scale: 2,
+                    logging: false,
+                    useCORS: true,
+                    allowTaint: false,
+                    scrollX: 0,
+                    scrollY: 0,
+                    x: 0,
+                    y: 0,
+                    width: finalWidth,
+                    height: finalHeight,
+                    windowWidth: finalWidth,
+                    windowHeight: finalHeight,
+                    onclone: (clonedDoc) => {
+                        // 确保克隆的文档中表格样式正确
+                        const clonedTable = clonedDoc.getElementById('scheduleTable');
+                        const clonedContainer = clonedTable.parentNode;
+                        clonedContainer.style.width = finalWidth + 'px';
+                        clonedContainer.style.height = finalHeight + 'px';
+                        clonedContainer.style.overflow = 'visible';
+                        clonedTable.style.transform = 'none';
+                        clonedTable.style.width = 'auto';
+                    }
+                });
+                
+                // 下载图片
+                canvas.toBlob(blob => {
+                    if (blob) {
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `排班表_${new Date().toISOString().slice(0, 10)}.png`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                    }
+                });
+            } finally {
+                // 恢复原始样式
+                container.style.cssText = originalContainerStyle;
+                table.style.cssText = originalTableStyle;
+            }
+        }
+        
+        // 页面加载时自动生成排班表
+        window.onload = function() {
+            generateSchedule();
+        };
+    </script>
+</body>
+</html>
