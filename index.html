@@ -137,8 +137,7 @@
                 padding: 10px 14px;
                 font-size: 14px;
                 border-radius: 12px;
-                display: block;
-                width: 100%;
+                display: inline-block;
                 text-align: center;
                 white-space: nowrap;
                 font-weight: 600;
@@ -352,45 +351,37 @@
         
         table {
             width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
+            border-collapse: collapse;
             margin-top: 20px;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-        
-        table th:first-child {
-            border-top-left-radius: 8px;
-        }
-        
-        table th:last-child {
-            border-top-right-radius: 8px;
-        }
-        
-        table tr:last-child td:first-child {
-            border-bottom-left-radius: 8px;
-        }
-        
-        table tr:last-child td:last-child {
-            border-bottom-right-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            border: 1px solid #ddd;
         }
         
         th, td {
-            padding: 15px;
+            padding: 10px;
             text-align: center;
-            border: 1px solid #e0e0e0;
+            border: 1px solid #ddd;
+            position: relative;
         }
         
         th {
-            background-color: #f8f9fa;
+            background-color: #f9f9f9;
             font-weight: bold;
+            height: 60px;
+        }
+        
+        td {
+            vertical-align: middle;
+            height: 60px;
         }
         
         .diagonal-cell {
             position: relative;
-            height: 80px;
             width: 80px;
+            height: 80px;
+            padding: 0;
+            background-color: #f9f9f9;
         }
         
         .diagonal-cell::before {
@@ -400,122 +391,89 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: linear-gradient(135deg, transparent 49%, #666 49%, #666 51%, transparent 51%);
+            background: linear-gradient(135deg, transparent 48%, #ddd 48%, #ddd 52%, transparent 52%);
             z-index: 1;
         }
         
         .diagonal-name {
             position: absolute;
-            bottom: 15px;
-            left: 15px;
+            bottom: 10px;
+            left: 10px;
             font-size: 14px;
             font-weight: bold;
             color: #333;
             z-index: 2;
-            background-color: #f8f9fa;
-            padding: 2px 4px;
-            border-radius: 2px;
         }
         
         .diagonal-date {
             position: absolute;
-            top: 15px;
-            right: 15px;
+            top: 10px;
+            right: 10px;
             font-size: 14px;
             font-weight: bold;
             color: #333;
             z-index: 2;
-            background-color: #f8f9fa;
-            padding: 2px 4px;
-            border-radius: 2px;
         }
         
-        
-        
         .corner-year {
-            position: absolute;
-            top: 50%;
-            right: 10px;
-            transform: translateY(-50%);
-            font-size: 14px;
-            font-weight: bold;
-            color: #666;
-            z-index: 3;
-            background-color: rgba(248, 249, 250, 0.95);
-            padding: 2px 5px;
-            border-radius: 3px;
+            display: none;
         }
         
         .shift-morning {
-            background-color: #2196F3;
-            color: white;
-            padding: 12px 16px;
-            border-radius: 16px;
+            background-color: #E3F2FD;
+            color: #1976D2;
+            padding: 8px 12px;
+            border-radius: 12px;
             font-weight: 600;
-            box-shadow: 0 3px 8px rgba(33, 150, 243, 0.3);
-            transition: all 0.3s ease;
-            border: 2px solid #1976D2;
-            font-size: 16px;
-        }
-        
-        .shift-morning:hover {
-            background-color: #1976D2;
-            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.5);
-            transform: translateY(-2px);
+            font-size: 14px;
+            display: inline-block;
+            box-shadow: none;
+            border: none;
         }
         
         .shift-evening {
-            background-color: #FF9800;
-            color: white;
-            padding: 12px 16px;
-            border-radius: 16px;
+            background-color: #FFF3E0;
+            color: #E65100;
+            padding: 8px 12px;
+            border-radius: 12px;
             font-weight: 600;
-            box-shadow: 0 3px 8px rgba(255, 152, 0, 0.3);
-            transition: all 0.3s ease;
-            border: 2px solid #F57C00;
-            font-size: 16px;
-        }
-        
-        .shift-evening:hover {
-            background-color: #F57C00;
-            box-shadow: 0 5px 15px rgba(255, 152, 0, 0.5);
-            transform: translateY(-2px);
+            font-size: 14px;
+            display: inline-block;
+            box-shadow: none;
+            border: none;
         }
         
         .shift-full {
-            background-color: #F44336;
-            color: white;
-            padding: 12px 16px;
-            border-radius: 16px;
+            background-color: #FCE4EC;
+            color: #C2185B;
+            padding: 8px 12px;
+            border-radius: 12px;
             font-weight: 600;
-            box-shadow: 0 3px 8px rgba(244, 67, 54, 0.3);
-            transition: all 0.3s ease;
-            border: 2px solid #D32F2F;
-            font-size: 16px;
-        }
-        
-        .shift-full:hover {
-            background-color: #D32F2F;
-            box-shadow: 0 5px 15px rgba(244, 67, 54, 0.5);
-            transform: translateY(-2px);
+            font-size: 14px;
+            display: inline-block;
+            box-shadow: none;
+            border: none;
         }
         
         .shift-rest {
-            background-color: #4CAF50;
-            color: white;
-            padding: 12px 16px;
-            border-radius: 16px;
+            background-color: #E8F5E9;
+            color: #388E3C;
+            padding: 8px 12px;
+            border-radius: 12px;
             font-weight: 600;
-            box-shadow: 0 3px 8px rgba(76, 175, 80, 0.3);
-            transition: all 0.3s ease;
-            border: 2px solid #388E3C;
-            font-size: 16px;
+            font-size: 14px;
+            display: inline-block;
+            box-shadow: none;
+            border: none;
         }
         
+        .shift-morning:hover,
+        .shift-evening:hover,
+        .shift-full:hover,
         .shift-rest:hover {
-            background-color: #388E3C;
-            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.5);
-            transform: translateY(-2px);
+            transform: none;
+            box-shadow: none;
+            background-color: inherit;
         }
         
         .stats {
@@ -663,6 +621,17 @@
                 return;
             }
             
+            // 获取用户选择的班次类型
+            const allowMorning = document.getElementById('shiftMorning').checked;
+            const allowEvening = document.getElementById('shiftEvening').checked;
+            const allowFull = document.getElementById('shiftFull').checked;
+            
+            // 确保至少选择了一个班次类型
+            if (!allowMorning && !allowEvening && !allowFull) {
+                alert('请至少选择一种班次类型');
+                return;
+            }
+            
             const daysOfWeek = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
             const schedule = [];
             
@@ -715,68 +684,128 @@
                 if (employees.length === 2) {
                     // 检查是否有员工休息
                     if (restDays[0] === weekDay) {
-                        // 员工0休息，员工1上全班
+                        // 员工0休息，员工1上班
+                        let shiftType = 'full';
+                        // 根据用户选择的班次类型确定可用的班次
+                        if (!allowFull) {
+                            // 如果不允许全班，根据数量平衡选择早班或晚班
+                            shiftType = morningCount[1] <= eveningCount[1] ? 'morning' : 'evening';
+                            // 确保选择的班次类型是允许的
+                            if ((shiftType === 'morning' && !allowMorning) || (shiftType === 'evening' && !allowEvening)) {
+                                // 如果不允许，选择另一种班次
+                                shiftType = shiftType === 'morning' ? 'evening' : 'morning';
+                            }
+                        }
+                        
                         daySchedule.employees.push({
                             name: employees[0].name,
                             shift: 'rest'
                         });
                         daySchedule.employees.push({
                             name: employees[1].name,
-                            shift: 'full'
+                            shift: shiftType
                         });
                         
                         employees[0].shifts.rest++;
-                        employees[1].shifts.full++;
-                        morningCount[1]++;
-                        eveningCount[1]++;
+                        employees[1].shifts[shiftType]++;
+                        if (shiftType === 'morning' || shiftType === 'full') morningCount[1]++;
+                        if (shiftType === 'evening' || shiftType === 'full') eveningCount[1]++;
                     } else if (restDays[1] === weekDay) {
-                        // 员工1休息，员工0上全班
+                        // 员工1休息，员工0上班
+                        let shiftType = 'full';
+                        // 根据用户选择的班次类型确定可用的班次
+                        if (!allowFull) {
+                            // 如果不允许全班，根据数量平衡选择早班或晚班
+                            shiftType = morningCount[0] <= eveningCount[0] ? 'morning' : 'evening';
+                            // 确保选择的班次类型是允许的
+                            if ((shiftType === 'morning' && !allowMorning) || (shiftType === 'evening' && !allowEvening)) {
+                                // 如果不允许，选择另一种班次
+                                shiftType = shiftType === 'morning' ? 'evening' : 'morning';
+                            }
+                        }
+                        
                         daySchedule.employees.push({
                             name: employees[0].name,
-                            shift: 'full'
+                            shift: shiftType
                         });
                         daySchedule.employees.push({
                             name: employees[1].name,
                             shift: 'rest'
                         });
                         
-                        employees[0].shifts.full++;
+                        employees[0].shifts[shiftType]++;
                         employees[1].shifts.rest++;
-                        morningCount[0]++;
-                        eveningCount[0]++;
+                        if (shiftType === 'morning' || shiftType === 'full') morningCount[0]++;
+                        if (shiftType === 'evening' || shiftType === 'full') eveningCount[0]++;
                     } else {
-                            // 都不休息，必须分配一人早班一人晚班
+                            // 都不休息，根据用户选择的班次类型分配
                             let emp0Shift, emp1Shift;
                             
-                            // 优先延续前一天的班次（支持连续排班）
-                            if (day > 0) {
-                                emp0Shift = previousShift[0] === 'rest' ? 'morning' : previousShift[0];
-                                emp1Shift = previousShift[1] === 'rest' ? 'evening' : previousShift[1];
-                                
-                                // 检查是否冲突（两人不能上相同的班次）
-                                if (emp0Shift === emp1Shift) {
-                                    // 如果冲突，交换其中一人的班次
-                                    emp1Shift = emp1Shift === 'morning' ? 'evening' : 'morning';
-                                }
-                            } else {
-                                // 第一天按日期轮换
-                                if (day % 2 === 0) {
-                                    emp0Shift = 'morning';
-                                    emp1Shift = 'evening';
+                            // 情况1：只选择了早班
+                            if (allowMorning && !allowEvening && !allowFull) {
+                                emp0Shift = 'morning';
+                                emp1Shift = 'morning';
+                            }
+                            // 情况2：只选择了晚班
+                            else if (!allowMorning && allowEvening && !allowFull) {
+                                emp0Shift = 'evening';
+                                emp1Shift = 'evening';
+                            }
+                            // 情况3：只选择了全班
+                            else if (!allowMorning && !allowEvening && allowFull) {
+                                emp0Shift = 'full';
+                                emp1Shift = 'full';
+                            }
+                            // 情况4：选择了早班和晚班
+                            else if (allowMorning && allowEvening) {
+                                // 分配一人早班一人晚班
+                                // 优先延续前一天的班次（支持连续排班）
+                                if (day > 0) {
+                                    emp0Shift = previousShift[0] === 'rest' ? 'morning' : previousShift[0];
+                                    emp1Shift = previousShift[1] === 'rest' ? 'evening' : previousShift[1];
+                                    
+                                    // 检查是否冲突（两人不能上相同的班次）
+                                    if (emp0Shift === emp1Shift) {
+                                        // 如果冲突，交换其中一人的班次
+                                        emp1Shift = emp1Shift === 'morning' ? 'evening' : 'morning';
+                                    }
                                 } else {
+                                    // 第一天按日期轮换
+                                    if (day % 2 === 0) {
+                                        emp0Shift = 'morning';
+                                        emp1Shift = 'evening';
+                                    } else {
+                                        emp0Shift = 'evening';
+                                        emp1Shift = 'morning';
+                                    }
+                                }
+                                
+                                // 检查班次数量平衡，如果差异太大则调整
+                                const morningDiff = morningCount[0] - morningCount[1];
+                                if (morningDiff > 1) {
+                                    // 员工0早班过多，强制调整
                                     emp0Shift = 'evening';
                                     emp1Shift = 'morning';
+                                } else if (morningDiff < -1) {
+                                    // 员工1早班过多，强制调整
+                                    emp0Shift = 'morning';
+                                    emp1Shift = 'evening';
                                 }
                             }
-                            
-                            // 检查班次数量平衡，如果差异太大则调整
-                            const morningDiff = morningCount[0] - morningCount[1];
-                            if (morningDiff > 1) {
-                                // 员工0早班过多，强制调整
-                                emp0Shift = 'evening';
-                                emp1Shift = 'morning';
-                            } else if (morningDiff < -1) {
-                                // 员工1早班过多，强制调整
+                            // 情况5：选择了早班和全班
+                            else if (allowMorning && allowFull) {
+                                // 一人早班，一人全班
+                                emp0Shift = morningCount[0] <= eveningCount[0] ? 'morning' : 'full';
+                                emp1Shift = emp0Shift === 'morning' ? 'full' : 'morning';
+                            }
+                            // 情况6：选择了晚班和全班
+                            else if (allowEvening && allowFull) {
+                                // 一人晚班，一人全班
+                                emp0Shift = morningCount[0] <= eveningCount[0] ? 'full' : 'evening';
+                                emp1Shift = emp0Shift === 'full' ? 'evening' : 'full';
+                            }
+                            // 默认情况（应该不会发生，因为已经检查过至少选择了一个班次）
+                            else {
                                 emp0Shift = 'morning';
                                 emp1Shift = 'evening';
                             }
@@ -846,168 +875,253 @@
                     
                     // 为所有员工分配班次（确保每个人都有排班）
                     workingEmployees.forEach(empIndex => {
-                        // 如果只有一名员工工作，分配全班
+                        // 如果只有一名员工工作
                         if (workingEmployees.length === 1) {
-                            shifts[empIndex] = 'full';
+                            // 选择可用的班次类型
+                            let shiftType = 'full';
+                            if (!allowFull) {
+                                if (allowMorning) {
+                                    shiftType = 'morning';
+                                } else if (allowEvening) {
+                                    shiftType = 'evening';
+                                }
+                            }
+                            shifts[empIndex] = shiftType;
                             return;
                         }
                         
-                        // 首先确保有员工上早班和晚班
+                        // 首先确保有员工上选择的班次类型
                         let shift = '';
                         
-                        // 优先分配早班和晚班
+                        // 优先分配用户选择的班次类型
                         const hasMorning = shifts.some(s => s === 'morning');
                         const hasEvening = shifts.some(s => s === 'evening');
+                        const hasFull = shifts.some(s => s === 'full');
                         
-                        // 如果还没有早班和晚班，则分配
-                        if (!hasMorning && !hasEvening) {
-                            // 找出早班最少的员工分配早班
-                            let minMorningCount = Infinity;
-                            let minMorningIndex = -1;
-                            workingEmployees.forEach(idx => {
-                                if (morningCount[idx] < minMorningCount) {
-                                    minMorningCount = morningCount[idx];
-                                    minMorningIndex = idx;
-                                }
-                            });
-                            
-                            if (minMorningIndex === empIndex) {
-                                shift = 'morning';
-                            } else {
-                                // 找出晚班最少的员工分配晚班
-                                let minEveningCount = Infinity;
-                                let minEveningIndex = -1;
+                        // 根据用户选择的班次类型组合进行处理
+                        // 情况1：选择了早班和晚班
+                        if (allowMorning && allowEvening) {
+                            // 优先确保有早班和晚班
+                            if (!hasMorning && !hasEvening) {
+                                // 找出早班最少的员工分配早班
+                                let minMorningCount = Infinity;
+                                let minMorningIndex = -1;
                                 workingEmployees.forEach(idx => {
-                                    if (eveningCount[idx] < minEveningCount) {
-                                        minEveningCount = eveningCount[idx];
-                                        minEveningIndex = idx;
-                                    }
-                                });
-                                
-                                if (minEveningIndex === empIndex) {
-                                    shift = 'evening';
-                                } else {
-                                    // 如果当前员工既不是早班最少也不是晚班最少，根据历史班次数量分配
-                                    shift = morningCount[empIndex] <= eveningCount[empIndex] ? 'morning' : 'evening';
-                                }
-                            }
-                        } else if (!hasMorning) {
-                            // 只有晚班，需要分配早班
-                            // 优先分配给早班最少的员工
-                            let minMorningCount = Infinity;
-                            let minMorningIndex = -1;
-                            workingEmployees.forEach(idx => {
-                                if (shifts[idx] === '') {
                                     if (morningCount[idx] < minMorningCount) {
                                         minMorningCount = morningCount[idx];
                                         minMorningIndex = idx;
                                     }
-                                }
-                            });
-                            shift = minMorningIndex === empIndex ? 'morning' : '';
-                            // 如果不是早班最少的员工，暂时不分配
-                            if (shift !== 'morning' && shifts[empIndex] === '') {
-                                // 暂时跳过，让其他员工先分配
-                                return;
-                            }
-                        } else if (!hasEvening) {
-                            // 只有早班，需要分配晚班
-                            // 优先分配给晚班最少的员工
-                            let minEveningCount = Infinity;
-                            let minEveningIndex = -1;
-                            workingEmployees.forEach(idx => {
-                                if (shifts[idx] === '') {
-                                    if (eveningCount[idx] < minEveningCount) {
-                                        minEveningCount = eveningCount[idx];
-                                        minEveningIndex = idx;
+                                });
+                                
+                                if (minMorningIndex === empIndex) {
+                                    shift = 'morning';
+                                } else {
+                                    // 找出晚班最少的员工分配晚班
+                                    let minEveningCount = Infinity;
+                                    let minEveningIndex = -1;
+                                    workingEmployees.forEach(idx => {
+                                        if (eveningCount[idx] < minEveningCount) {
+                                            minEveningCount = eveningCount[idx];
+                                            minEveningIndex = idx;
+                                        }
+                                    });
+                                    
+                                    if (minEveningIndex === empIndex) {
+                                        shift = 'evening';
+                                    } else {
+                                        // 如果当前员工既不是早班最少也不是晚班最少，根据历史班次数量分配
+                                        shift = morningCount[empIndex] <= eveningCount[empIndex] ? 'morning' : 'evening';
                                     }
                                 }
-                            });
-                            shift = minEveningIndex === empIndex ? 'evening' : '';
-                            // 如果不是晚班最少的员工，暂时不分配
-                            if (shift !== 'evening' && shifts[empIndex] === '') {
-                                // 暂时跳过，让其他员工先分配
-                                return;
-                            }
-                        } else {
-                            // 早班和晚班都已有员工，根据历史班次数量分配
-                            // 优先考虑班次最不平衡的员工
-                            let maxDiff = -1;
-                            let targetIndex = -1;
-                            let shouldAssignMorning = false;
-                            
-                            workingEmployees.forEach(idx => {
-                                if (shifts[idx] === '') {
-                                    const diff = Math.abs(morningCount[idx] - eveningCount[idx]);
-                                    if (diff > maxDiff) {
-                                        maxDiff = diff;
-                                        targetIndex = idx;
-                                        shouldAssignMorning = morningCount[idx] < eveningCount[idx];
-                                    } else if (diff === maxDiff) {
-                                        // 差异相同，选择总班次少的
-                                        const total1 = morningCount[idx] + eveningCount[idx];
-                                        const total2 = morningCount[targetIndex] + eveningCount[targetIndex];
-                                        if (total1 < total2) {
-                                            targetIndex = idx;
-                                            shouldAssignMorning = morningCount[idx] < eveningCount[idx];
+                            } else if (!hasMorning) {
+                                // 只有晚班，需要分配早班
+                                // 优先分配给早班最少的员工
+                                let minMorningCount = Infinity;
+                                let minMorningIndex = -1;
+                                workingEmployees.forEach(idx => {
+                                    if (shifts[idx] === '') {
+                                        if (morningCount[idx] < minMorningCount) {
+                                            minMorningCount = morningCount[idx];
+                                            minMorningIndex = idx;
                                         }
                                     }
+                                });
+                                shift = minMorningIndex === empIndex ? 'morning' : '';
+                                // 如果不是早班最少的员工，暂时不分配
+                                if (shift !== 'morning' && shifts[empIndex] === '') {
+                                    // 暂时跳过，让其他员工先分配
+                                    return;
                                 }
-                            });
-                            
-                            // 为最需要平衡的员工分配班次
-                            if (targetIndex === empIndex) {
-                                shift = shouldAssignMorning ? 'morning' : 'evening';
+                            } else if (!hasEvening) {
+                                // 只有早班，需要分配晚班
+                                // 优先分配给晚班最少的员工
+                                let minEveningCount = Infinity;
+                                let minEveningIndex = -1;
+                                workingEmployees.forEach(idx => {
+                                    if (shifts[idx] === '') {
+                                        if (eveningCount[idx] < minEveningCount) {
+                                            minEveningCount = eveningCount[idx];
+                                            minEveningIndex = idx;
+                                        }
+                                    }
+                                });
+                                shift = minEveningIndex === empIndex ? 'evening' : '';
+                                // 如果不是晚班最少的员工，暂时不分配
+                                if (shift !== 'evening' && shifts[empIndex] === '') {
+                                    // 暂时跳过，让其他员工先分配
+                                    return;
+                                }
                             } else {
-                                // 对于其他员工，继续根据历史数量分配
-                                shift = morningCount[empIndex] <= eveningCount[empIndex] ? 'morning' : 'evening';
+                                // 早班和晚班都已有员工，根据历史班次数量分配
+                                // 优先考虑班次最不平衡的员工
+                                let maxDiff = -1;
+                                let targetIndex = -1;
+                                let shouldAssignMorning = false;
+                                
+                                workingEmployees.forEach(idx => {
+                                    if (shifts[idx] === '') {
+                                        const diff = Math.abs(morningCount[idx] - eveningCount[idx]);
+                                        if (diff > maxDiff) {
+                                            maxDiff = diff;
+                                            targetIndex = idx;
+                                            shouldAssignMorning = morningCount[idx] < eveningCount[idx];
+                                        } else if (diff === maxDiff) {
+                                            // 差异相同，选择总班次少的
+                                            const total1 = morningCount[idx] + eveningCount[idx];
+                                            const total2 = morningCount[targetIndex] + eveningCount[targetIndex];
+                                            if (total1 < total2) {
+                                                targetIndex = idx;
+                                                shouldAssignMorning = morningCount[idx] < eveningCount[idx];
+                                            }
+                                        }
+                                    }
+                                });
+                                
+                                // 为最需要平衡的员工分配班次
+                                if (targetIndex === empIndex) {
+                                    shift = shouldAssignMorning ? 'morning' : 'evening';
+                                } else {
+                                    // 对于其他员工，继续根据历史数量分配
+                                    shift = morningCount[empIndex] <= eveningCount[empIndex] ? 'morning' : 'evening';
+                                }
                             }
+                        }
+                        // 情况2：只选择了早班
+                        else if (allowMorning) {
+                            shift = 'morning';
+                        }
+                        // 情况3：只选择了晚班
+                        else if (allowEvening) {
+                            shift = 'evening';
+                        }
+                        // 情况4：只选择了全班
+                        else if (allowFull) {
+                            shift = 'full';
+                        }
+                        // 情况5：选择了早班和全班
+                        else if (allowMorning && allowFull) {
+                            // 分配早班或全班
+                            shift = morningCount[empIndex] < 4 ? 'morning' : 'full';
+                        }
+                        // 情况6：选择了晚班和全班
+                        else if (allowEvening && allowFull) {
+                            // 分配晚班或全班
+                            shift = eveningCount[empIndex] < 4 ? 'evening' : 'full';
                         }
                         
                         // 优先延续前一天的有效班次（支持连续排班）
                         if (day > 0 && previousShift[empIndex] !== 'rest' && previousShift[empIndex] !== '') {
-                            // 检查是否会导致连续3天相同班次
-                            let isConsecutive = false;
-                            if (day >= 2) {
-                                const day2Shift = schedule[day-2].employees[empIndex].shift;
-                                const day1Shift = previousShift[empIndex];
-                                if (day2Shift === day1Shift && day1Shift === shift) {
-                                    isConsecutive = true;
+                            // 检查前一天的班次是否是用户选择的类型
+                            const prevShiftAllowed = (previousShift[empIndex] === 'morning' && allowMorning) ||
+                                                  (previousShift[empIndex] === 'evening' && allowEvening) ||
+                                                  (previousShift[empIndex] === 'full' && allowFull);
+                            
+                            if (prevShiftAllowed) {
+                                // 检查是否会导致连续3天相同班次
+                                let isConsecutive = false;
+                                if (day >= 2) {
+                                    const day2Shift = schedule[day-2].employees[empIndex].shift;
+                                    const day1Shift = previousShift[empIndex];
+                                    if (day2Shift === day1Shift && day1Shift === shift) {
+                                        isConsecutive = true;
+                                    }
                                 }
-                            }
-                            // 如果不会连续3天相同班次，延续前一天的班次
-                            if (!isConsecutive) {
-                                // 但要确保不会破坏整体平衡
-                                const morningDiff = Math.abs((morningCount[empIndex] + (previousShift[empIndex] === 'morning' ? 1 : 0)) - eveningCount[empIndex]);
-                                const eveningDiff = Math.abs(morningCount[empIndex] - (eveningCount[empIndex] + (previousShift[empIndex] === 'evening' ? 1 : 0)));
-                                
-                                // 如果延续前一天的班次不会导致差异超过1，则延续
-                                if (Math.min(morningDiff, eveningDiff) <= 1) {
-                                    shift = previousShift[empIndex];
+                                // 如果不会连续3天相同班次，延续前一天的班次
+                                if (!isConsecutive) {
+                                    // 但要确保不会破坏整体平衡（只对早班/晚班有效）
+                                    if (previousShift[empIndex] === 'morning' || previousShift[empIndex] === 'evening') {
+                                        const morningDiff = Math.abs((morningCount[empIndex] + (previousShift[empIndex] === 'morning' ? 1 : 0)) - eveningCount[empIndex]);
+                                        const eveningDiff = Math.abs(morningCount[empIndex] - (eveningCount[empIndex] + (previousShift[empIndex] === 'evening' ? 1 : 0)));
+                                        
+                                        // 如果延续前一天的班次不会导致差异超过1，则延续
+                                        if (Math.min(morningDiff, eveningDiff) <= 1) {
+                                            shift = previousShift[empIndex];
+                                        }
+                                    } else {
+                                        // 全班直接延续
+                                        shift = previousShift[empIndex];
+                                    }
                                 }
                             }
                         }
                         
-                        // 限制每个员工的早班和晚班数量不超过4天
+                        // 限制每个员工的早班和晚班数量不超过4天，并确保只使用允许的班次类型
                         if (shift === 'morning' && morningCount[empIndex] >= 4) {
-                            shift = 'evening';
+                            if (allowEvening) {
+                                shift = 'evening';
+                            } else if (allowFull) {
+                                shift = 'full';
+                            }
+                            // 如果只有早班允许且已满，则继续使用早班（虽然超过限制）
                         } else if (shift === 'evening' && eveningCount[empIndex] >= 4) {
-                            shift = 'morning';
+                            if (allowMorning) {
+                                shift = 'morning';
+                            } else if (allowFull) {
+                                shift = 'full';
+                            }
+                            // 如果只有晚班允许且已满，则继续使用晚班（虽然超过限制）
                         }
                         
-                        // 如果早班和晚班都已经满了，分配全班
-                        if ((shift === 'morning' && morningCount[empIndex] >= 4) || 
-                            (shift === 'evening' && eveningCount[empIndex] >= 4)) {
+                        // 如果早班和晚班都已经满了，分配全班（如果允许）
+                        if ((shift === 'morning' && morningCount[empIndex] >= 4 && allowFull) || 
+                            (shift === 'evening' && eveningCount[empIndex] >= 4 && allowFull)) {
                             shift = 'full';
+                        }
+                        
+                        // 确保班次类型是允许的
+                        if (shift === 'morning' && !allowMorning) {
+                            if (allowEvening) {
+                                shift = 'evening';
+                            } else if (allowFull) {
+                                shift = 'full';
+                            }
+                        } else if (shift === 'evening' && !allowEvening) {
+                            if (allowMorning) {
+                                shift = 'morning';
+                            } else if (allowFull) {
+                                shift = 'full';
+                            }
+                        } else if (shift === 'full' && !allowFull) {
+                            if (allowMorning && allowEvening) {
+                                shift = morningCount[empIndex] <= eveningCount[empIndex] ? 'morning' : 'evening';
+                            } else if (allowMorning) {
+                                shift = 'morning';
+                            } else if (allowEvening) {
+                                shift = 'evening';
+                            }
                         }
                         
                         // 最终确保分配了有效的班次
                         if (shift === '') {
                             // 绝对确保不会有空班次 - 最后一道防线
-                            if (morningCount[empIndex] <= eveningCount[empIndex]) {
+                            if (allowMorning && allowEvening) {
+                                shift = morningCount[empIndex] <= eveningCount[empIndex] ? 'morning' : 'evening';
+                            } else if (allowMorning) {
                                 shift = 'morning';
-                            } else {
+                            } else if (allowEvening) {
                                 shift = 'evening';
+                            } else if (allowFull) {
+                                shift = 'full';
                             }
                             // 记录这是最后的备用分配
                             console.log(`为员工${empIndex+1}分配了备用班次: ${shift}`);
@@ -1037,47 +1151,64 @@
                             
                             // 如果即将连续3天相同班次，则调整
                             if (day1Shift === shift && day2Shift === shift) {
-                                // 尝试切换到其他班次
-                                if (shift === 'morning' && eveningCount[empIndex] < 4) {
-                                    shifts[empIndex] = 'evening';
-                                } else if (shift === 'evening' && morningCount[empIndex] < 4) {
-                                    shifts[empIndex] = 'morning';
-                                } else if (shift === 'morning' || shift === 'evening') {
-                                    shifts[empIndex] = 'full';
+                                // 尝试切换到其他允许的班次类型
+                                if (shift === 'morning') {
+                                    if (allowEvening && eveningCount[empIndex] < 4) {
+                                        shifts[empIndex] = 'evening';
+                                    } else if (allowFull) {
+                                        shifts[empIndex] = 'full';
+                                    }
+                                } else if (shift === 'evening') {
+                                    if (allowMorning && morningCount[empIndex] < 4) {
+                                        shifts[empIndex] = 'morning';
+                                    } else if (allowFull) {
+                                        shifts[empIndex] = 'full';
+                                    }
+                                } else if (shift === 'full') {
+                                    // 如果是全班，尝试切换到早班或晚班（如果允许）
+                                    if (allowMorning && allowEvening) {
+                                        shifts[empIndex] = morningCount[empIndex] <= eveningCount[empIndex] ? 'morning' : 'evening';
+                                    } else if (allowMorning) {
+                                        shifts[empIndex] = 'morning';
+                                    } else if (allowEvening) {
+                                        shifts[empIndex] = 'evening';
+                                    }
                                 }
                             }
                         }
                     });
                     
-                    // 最终平衡调整：确保每个员工的早班和晚班数量差异不超过1
-                    workingEmployees.forEach(empIndex => {
-                        if (shifts[empIndex] === 'morning' || shifts[empIndex] === 'evening') {
-                            const expectedShift = morningCount[empIndex] <= eveningCount[empIndex] ? 'morning' : 'evening';
-                            const currentShift = shifts[empIndex];
-                            
-                            // 如果当前班次与预期班次不同，且不会导致连续3天相同班次，则调整
-                            if (expectedShift !== currentShift) {
-                                let canChange = true;
+                    // 最终平衡调整：确保每个员工的早班和晚班数量差异不超过1（仅对同时选择早班和晚班的情况有效）
+                    if (allowMorning && allowEvening) {
+                        workingEmployees.forEach(empIndex => {
+                            if ((shifts[empIndex] === 'morning' || shifts[empIndex] === 'evening') && (allowMorning && allowEvening)) {
+                                const expectedShift = morningCount[empIndex] <= eveningCount[empIndex] ? 'morning' : 'evening';
+                                const currentShift = shifts[empIndex];
                                 
-                                // 检查是否会导致连续3天相同班次
-                                if (day >= 2) {
-                                    const day2Shift = schedule[day-2].employees[empIndex].shift;
-                                    const day1Shift = previousShift[empIndex];
-                                    if (day2Shift === expectedShift && day1Shift === expectedShift) {
-                                        canChange = false;
+                                // 如果当前班次与预期班次不同，且不会导致连续3天相同班次，则调整
+                                if (expectedShift !== currentShift) {
+                                    let canChange = true;
+                                    
+                                    // 检查是否会导致连续3天相同班次
+                                    if (day >= 2) {
+                                        const day2Shift = schedule[day-2].employees[empIndex].shift;
+                                        const day1Shift = previousShift[empIndex];
+                                        if (day2Shift === expectedShift && day1Shift === expectedShift) {
+                                            canChange = false;
+                                        }
                                     }
-                                }
-                                
-                                if (canChange) {
-                                    // 检查调整后是否会超过班次限制
-                                    if ((expectedShift === 'morning' && morningCount[empIndex] < 4) || 
-                                        (expectedShift === 'evening' && eveningCount[empIndex] < 4)) {
-                                        shifts[empIndex] = expectedShift;
+                                    
+                                    if (canChange) {
+                                        // 检查调整后是否会超过班次限制
+                                        if ((expectedShift === 'morning' && morningCount[empIndex] < 4) || 
+                                            (expectedShift === 'evening' && eveningCount[empIndex] < 4)) {
+                                            shifts[empIndex] = expectedShift;
+                                        }
                                     }
                                 }
                             }
-                        }
-                    });
+                        });
+                    }
                     
                     // 更新班次计数器、员工统计和前一天班次记录
                     shifts.forEach((shift, empIndex) => {
@@ -1089,15 +1220,27 @@
                                 shifts[empIndex] = 'rest';
                                 employees[empIndex].shifts.rest++;
                             } else {
-                                // 不应该休息，必须分配一个工作班次
-                                if (morningCount[empIndex] <= eveningCount[empIndex]) {
-                                    shifts[empIndex] = 'morning';
-                                    morningCount[empIndex]++;
-                                } else {
-                                    shifts[empIndex] = 'evening';
-                                    eveningCount[empIndex]++;
+                                // 不应该休息，必须分配一个允许的工作班次
+                                let assignedShift = '';
+                                
+                                if (allowMorning && allowEvening) {
+                                    // 同时允许早班和晚班，选择数量较少的
+                                    assignedShift = morningCount[empIndex] <= eveningCount[empIndex] ? 'morning' : 'evening';
+                                } else if (allowMorning) {
+                                    // 只允许早班
+                                    assignedShift = 'morning';
+                                } else if (allowEvening) {
+                                    // 只允许晚班
+                                    assignedShift = 'evening';
+                                } else if (allowFull) {
+                                    // 只允许全班
+                                    assignedShift = 'full';
                                 }
-                                employees[empIndex].shifts[shifts[empIndex]]++;
+                                
+                                shifts[empIndex] = assignedShift;
+                                employees[empIndex].shifts[assignedShift]++;
+                                if (assignedShift === 'morning' || assignedShift === 'full') morningCount[empIndex]++;
+                                if (assignedShift === 'evening' || assignedShift === 'full') eveningCount[empIndex]++;
                             }
                         } else {
                             if (shift === 'morning') morningCount[empIndex]++;
@@ -1122,15 +1265,32 @@
                     if (!empSchedule.shift) {
                         console.error(`错误：${empSchedule.name}在${daySchedule.dayOfWeek}没有排班！`);
                         hasError = true;
-                        // 立即修复：为该员工分配休息或工作班次
+                        // 立即修复：为该员工分配休息或允许的工作班次
                         if (restDays[empIndex] === weekDay) {
                             empSchedule.shift = 'rest';
                             employees[empIndex].shifts.rest++;
                         } else {
-                            empSchedule.shift = morningCount[empIndex] <= eveningCount[empIndex] ? 'morning' : 'evening';
-                            employees[empIndex].shifts[empSchedule.shift]++;
-                            if (empSchedule.shift === 'morning') morningCount[empIndex]++;
-                            if (empSchedule.shift === 'evening') eveningCount[empIndex]++;
+                            // 选择允许的工作班次
+                            let assignedShift = '';
+                            
+                            if (allowMorning && allowEvening) {
+                                // 同时允许早班和晚班，选择数量较少的
+                                assignedShift = morningCount[empIndex] <= eveningCount[empIndex] ? 'morning' : 'evening';
+                            } else if (allowMorning) {
+                                // 只允许早班
+                                assignedShift = 'morning';
+                            } else if (allowEvening) {
+                                // 只允许晚班
+                                assignedShift = 'evening';
+                            } else if (allowFull) {
+                                // 只允许全班
+                                assignedShift = 'full';
+                            }
+                            
+                            empSchedule.shift = assignedShift;
+                            employees[empIndex].shifts[assignedShift]++;
+                            if (assignedShift === 'morning' || assignedShift === 'full') morningCount[empIndex]++;
+                            if (assignedShift === 'evening' || assignedShift === 'full') eveningCount[empIndex]++;
                         }
                         console.log(`已修复：${empSchedule.name}在${daySchedule.dayOfWeek}的班次为${empSchedule.shift}`);
                     }
