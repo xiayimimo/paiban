@@ -1723,21 +1723,101 @@
                 return;
             }
             
-            // 使用html2canvas库将表格转换为图�?
-            html2canvas(scheduleContainer, {
-                backgroundColor: '#ffffff',
-                scale: 2, // 提高图片质量
-                logging: false
-            }).then(canvas => {
-                // 创建下载链接
-                const link = document.createElement('a');
-                link.download = `排班表_${new Date().toISOString().slice(0, 10)}.png`;
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-            }).catch(error => {
-                console.error('截图失败:', error);
+            // 保存原始样式
+            const originalStyle = {
+                overflowX: scheduleContainer.style.overflowX,
+                whiteSpace: scheduleContainer.style.whiteSpace,
+                width: scheduleContainer.style.width,
+                maxWidth: scheduleContainer.style.maxWidth
+            };
+            
+            try {
+                // 获取表格元素
+                const table = document.getElementById('scheduleTable');
+                
+                // 保存表格原始样式
+                const originalTableStyle = {
+                    width: table.style.width,
+                    transform: table.style.transform,
+                    fontSize: table.style.fontSize,
+                    margin: table.style.margin
+                };
+                
+                // 暂时修改容器样式，确保表格完整显示
+                scheduleContainer.style.overflowX = 'visible';
+                scheduleContainer.style.whiteSpace = 'nowrap';
+                scheduleContainer.style.width = '100%';
+                scheduleContainer.style.maxWidth = 'none';
+                
+                // 确保表格能完整显示，移除所有可能影响宽度的样式
+                table.style.width = 'auto';
+                table.style.transform = 'none';
+                table.style.fontSize = '';
+                table.style.margin = '0';
+                
+                // 强制重排，确保获取正确的尺寸
+                scheduleContainer.offsetHeight;
+                table.offsetHeight;
+                
+                // 计算实际需要的宽度
+                const tableWidth = table.scrollWidth || table.offsetWidth;
+                
+                // 再次调整容器宽度以确保完全包含表格
+                scheduleContainer.style.width = tableWidth + 'px';
+                
+                // 使用html2canvas库将表格转换为图片
+                html2canvas(scheduleContainer, {
+                    backgroundColor: '#ffffff',
+                    scale: 2, // 提高图片质量
+                    logging: false,
+                    useCORS: true, // 允许跨域资源
+                    allowTaint: true, // 允许渲染跨域图片
+                    foreignObjectRendering: true, // 使用ForeignObject渲染
+                    scrollX: 0, // 从顶部开始捕获
+                    scrollY: 0,
+                    width: tableWidth, // 使用表格实际宽度
+                    height: table.scrollHeight, // 使用表格实际高度
+                    windowWidth: tableWidth, // 告诉html2canvas容器的实际宽度
+                    windowHeight: table.scrollHeight, // 告诉html2canvas容器的实际高度
+                    x: 0, // 从左上角开始捕获
+                    y: 0,
+                    ignoreElements: (element) => {
+                        // 忽略可能影响截图的元素
+                        return element.classList.contains('week-schedule-badge');
+                    }
+                }).then(canvas => {
+                    // 创建下载链接
+                    const link = document.createElement('a');
+                    link.download = `排班表_${new Date().toISOString().slice(0, 10)}.png`;
+                    link.href = canvas.toDataURL('image/png');
+                    link.click();
+                }).catch(error => {
+                    console.error('截图失败:', error);
+                    alert('截图失败，请重试。');
+                }).finally(() => {
+                    // 恢复表格原始样式
+                    table.style.width = originalTableStyle.width;
+                    table.style.transform = originalTableStyle.transform;
+                    table.style.fontSize = originalTableStyle.fontSize;
+                    table.style.margin = originalTableStyle.margin;
+                    
+                    // 恢复容器原始样式
+                    scheduleContainer.style.overflowX = originalStyle.overflowX;
+                    scheduleContainer.style.whiteSpace = originalStyle.whiteSpace;
+                    scheduleContainer.style.width = originalStyle.width;
+                    scheduleContainer.style.maxWidth = originalStyle.maxWidth;
+                });
+            } catch (error) {
+                console.error('截图过程出错:', error);
                 alert('截图失败，请重试。');
-            });
+                // 确保恢复原始样式
+                scheduleContainer.style.overflowX = originalStyle.overflowX;
+                scheduleContainer.style.whiteSpace = originalStyle.whiteSpace;
+                scheduleContainer.style.width = originalStyle.width;
+                if (originalStyle.maxWidth) {
+                    scheduleContainer.style.maxWidth = originalStyle.maxWidth;
+                }
+            }
         }
         
         // 页面加载时自动生成排班表
