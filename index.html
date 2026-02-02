@@ -1759,54 +1759,75 @@
                 scheduleContainer.offsetHeight;
                 table.offsetHeight;
                 
-                // 计算实际需要的宽度
+                // 计算实际需要的宽度和高度
                 const tableWidth = table.scrollWidth || table.offsetWidth;
+                const tableHeight = table.scrollHeight || table.offsetHeight;
                 
                 // 再次调整容器宽度以确保完全包含表格
                 scheduleContainer.style.width = tableWidth + 'px';
                 
-                // 使用html2canvas库将表格转换为图片
-                html2canvas(scheduleContainer, {
-                    backgroundColor: '#ffffff',
-                    scale: 2, // 提高图片质量
-                    logging: false,
-                    useCORS: true, // 允许跨域资源
-                    allowTaint: true, // 允许渲染跨域图片
-                    foreignObjectRendering: true, // 使用ForeignObject渲染
-                    scrollX: 0, // 从顶部开始捕获
-                    scrollY: 0,
-                    width: tableWidth, // 使用表格实际宽度
-                    height: table.scrollHeight, // 使用表格实际高度
-                    windowWidth: tableWidth, // 告诉html2canvas容器的实际宽度
-                    windowHeight: table.scrollHeight, // 告诉html2canvas容器的实际高度
-                    x: 0, // 从左上角开始捕获
-                    y: 0,
-                    ignoreElements: (element) => {
-                        // 忽略可能影响截图的元素
-                        return element.classList.contains('week-schedule-badge');
-                    }
-                }).then(canvas => {
-                    // 创建下载链接
-                    const link = document.createElement('a');
-                    link.download = `排班表_${new Date().toISOString().slice(0, 10)}.png`;
-                    link.href = canvas.toDataURL('image/png');
-                    link.click();
-                }).catch(error => {
-                    console.error('截图失败:', error);
-                    alert('截图失败，请重试。');
-                }).finally(() => {
-                    // 恢复表格原始样式
-                    table.style.width = originalTableStyle.width;
-                    table.style.transform = originalTableStyle.transform;
-                    table.style.fontSize = originalTableStyle.fontSize;
-                    table.style.margin = originalTableStyle.margin;
-                    
-                    // 恢复容器原始样式
-                    scheduleContainer.style.overflowX = originalStyle.overflowX;
-                    scheduleContainer.style.whiteSpace = originalStyle.whiteSpace;
-                    scheduleContainer.style.width = originalStyle.width;
-                    scheduleContainer.style.maxWidth = originalStyle.maxWidth;
-                });
+                // 使用setTimeout确保DOM更新完成
+                setTimeout(() => {
+                    // 使用html2canvas库将表格转换为图片，简化配置以提高移动端兼容性
+                    html2canvas(scheduleContainer, {
+                        backgroundColor: '#ffffff',
+                        scale: window.devicePixelRatio || 1, // 适配设备像素比
+                        logging: false,
+                        useCORS: true,
+                        allowTaint: true,
+                        // 移除可能在移动端不兼容的配置
+                        // foreignObjectRendering: true,
+                        scrollX: 0,
+                        scrollY: 0,
+                        // 不设置固定宽度和高度，让html2canvas自动计算
+                        ignoreElements: (element) => {
+                            return element.classList.contains('week-schedule-badge');
+                        }
+                    }).then(canvas => {
+                        try {
+                            // 创建下载链接
+                            const link = document.createElement('a');
+                            
+                            // 检查canvas是否有效
+                            if (canvas.width === 0 || canvas.height === 0) {
+                                throw new Error('生成的图片尺寸为0');
+                            }
+                            
+                            link.download = `排班表_${new Date().toISOString().slice(0, 10)}.png`;
+                            
+                            // 使用toBlob替代toDataURL，提高移动端兼容性
+                            canvas.toBlob(function(blob) {
+                                if (blob) {
+                                    link.href = URL.createObjectURL(blob);
+                                    link.click();
+                                    // 释放URL对象
+                                    setTimeout(() => URL.revokeObjectURL(link.href), 100);
+                                } else {
+                                    throw new Error('无法生成图片Blob');
+                                }
+                            }, 'image/png');
+                        } catch (downloadError) {
+                            console.error('下载失败:', downloadError);
+                            alert('下载失败，请重试。');
+                        }
+                    }).catch(error => {
+                        console.error('截图失败:', error);
+                        alert('截图失败，请重试。');
+                    }).finally(() => {
+                        // 恢复表格原始样式
+                        table.style.width = originalTableStyle.width;
+                        table.style.transform = originalTableStyle.transform;
+                        table.style.fontSize = originalTableStyle.fontSize;
+                        table.style.margin = originalTableStyle.margin;
+                        
+                        // 恢复容器原始样式
+                        scheduleContainer.style.overflowX = originalStyle.overflowX;
+                        scheduleContainer.style.whiteSpace = originalStyle.whiteSpace;
+                        scheduleContainer.style.width = originalStyle.width;
+                        scheduleContainer.style.maxWidth = originalStyle.maxWidth;
+                    });
+                }, 100); // 短暂延迟确保DOM更新
+                
             } catch (error) {
                 console.error('截图过程出错:', error);
                 alert('截图失败，请重试。');
